@@ -33,3 +33,20 @@ print("Path to dataset files:", path)
 | CLEAN | 0 |
 | OFFENSIVE | 1 |
 | HATE | 2 |
+
+# Word Vector
+
+Link: https://fasttext.cc/docs/en/crawl-vectors.html
+
+> download the VietNames zip file: cc.vi.300.vec.gz
+
+> download directly via link: https://dl.fbaipublicfiles.com/fasttext/vectors-crawl/cc.vi.300.vec.gz
+
+```
+@inproceedings{grave2018learning,
+  title={Learning Word Vectors for 157 Languages},
+  author={Grave, Edouard and Bojanowski, Piotr and Gupta, Prakhar and Joulin, Armand and Mikolov, Tomas},
+  booktitle={Proceedings of the International Conference on Language Resources and Evaluation (LREC 2018)},
+  year={2018}
+}
+```
