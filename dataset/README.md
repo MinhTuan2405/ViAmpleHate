@@ -34,7 +34,7 @@ print("Path to dataset files:", path)
 | OFFENSIVE | 1 |
 | HATE | 2 |
 
-# Word Vector
+# fastText word vectors
 
 Link: https://fasttext.cc/docs/en/crawl-vectors.html
 
