@@ -1,46 +1,51 @@
-# Down load dataset via these link
+# Download dataset
+
 ## ViHSD dataset
 [https://huggingface.co/datasets/uitnlp/vihsd](https://huggingface.co/datasets/uitnlp/vihsd)
 
-code
-```
+```python
 from datasets import load_dataset
 
 train = load_dataset("sonlam1102/vihsd", split="train")
-dev = load_dataset("sonlam1102/vihsd", split="validation")
-test = load_dataset("sonlam1102/vihsd", split="test")
-
+dev   = load_dataset("sonlam1102/vihsd", split="validation")
+test  = load_dataset("sonlam1102/vihsd", split="test")
 ```
 
-## Kaggle HSD
-[https://www.kaggle.com/datasets/cthng123/hate-speech-detection-vietnamese/data](https://www.kaggle.com/datasets/cthng123/hate-speech-detection-vietnamese/data)
+## VOZ-HSD dataset
+[https://huggingface.co/datasets/tarudesu/VOZ-HSD](https://huggingface.co/datasets/tarudesu/VOZ-HSD)
 
-code
+```python
+from datasets import load_dataset
+
+train = load_dataset("tarudesu/VOZ-HSD", split="train")
 ```
-import kagglehub
-
-# Download latest version
-path = kagglehub.dataset_download("cthng123/hate-speech-detection-vietnamese")
-
-print("Path to dataset files:", path)
-```
-
 
 ## Label overview
 
-| Label | ID |
-|-------|----|
-| CLEAN | 0 |
-| OFFENSIVE | 1 |
-| HATE | 2 |
+### ViHSD (3 nhãn → mapping về binary)
+
+| Label gốc | ID gốc | Label sau mapping | ID mới |
+|-----------|--------|-------------------|--------|
+| CLEAN     | 0      | NON-HATE          | 0      |
+| OFFENSIVE | 1      | NON-HATE          | 0      |
+| HATE      | 2      | HATE              | 1      |
+
+### VOZ-HSD (2 nhãn)
+
+| Label gốc | ID gốc | Label sau mapping | ID mới |
+|-----------|--------|-------------------|--------|
+| CLEAN     | 0      | NON-HATE          | 0      |
+| HATE      | 1      | HATE              | 1      |
+
+> **Lưu ý:** Label trong VOZ-HSD được tạo bởi AI classifier (ViSoBERT-HSD), không phải human-annotated.
 
 # fastText word vectors
 
 Link: https://fasttext.cc/docs/en/crawl-vectors.html
 
-> download the VietNames zip file: cc.vi.300.vec.gz
+> Download file tiếng Việt: `cc.vi.300.vec.gz`
 
-> download directly via link: https://dl.fbaipublicfiles.com/fasttext/vectors-crawl/cc.vi.300.vec.gz
+> Download trực tiếp: https://dl.fbaipublicfiles.com/fasttext/vectors-crawl/cc.vi.300.vec.gz
 
 ```
 @inproceedings{grave2018learning,
