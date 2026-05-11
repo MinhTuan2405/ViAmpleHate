@@ -1,0 +1,23 @@
+{
+  "model_name": "vinai/phobert-base",
+  "architecture": "PhoBERT + CNN",
+  "max_len": 128,
+  "num_classes": 2,
+  "label_names": [
+    "NON-HATE",
+    "HATE"
+  ],
+  "cnn_filters": 128,
+  "cnn_kernel_sizes": [
+    2,
+    3,
+    4
+  ],
+  "dropout": 0.4,
+  "lr_phobert": 1e-05,
+  "lr_cnn_head": 5e-05,
+  "best_epoch": 3,
+  "best_val_f1": 0.7584,
+  "test_macro_f1": 0.7571,
+  "test_f1_hate": 0.5745
+}
