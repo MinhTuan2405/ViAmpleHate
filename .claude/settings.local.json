@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(New-Item -ItemType Directory -Force \"D:\\\\WorkSpace\\\\projects\\\\ViAmpleHate\\\\docs\\\\superpowers\\\\specs\")",
+      "Bash(Out-Null)",
+      "Bash(Write-Output \"done\")"
+    ]
+  }
+}
