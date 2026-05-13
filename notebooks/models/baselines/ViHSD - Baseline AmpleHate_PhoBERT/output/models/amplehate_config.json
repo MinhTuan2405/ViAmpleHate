@@ -1,0 +1,25 @@
+{
+  "notebook": "vihsd-amplehate-phobert-baseline",
+  "method": "AmpleHate (original, English NER)",
+  "encoder": "vinai/phobert-base",
+  "ner_model": "dbmdz/bert-large-cased-finetuned-conll03-english",
+  "max_len": 128,
+  "hidden_dim": 768,
+  "e_injection": 1.0,
+  "dropout": 0.1,
+  "num_classes": 2,
+  "label_names": [
+    "NON-HATE",
+    "HATE"
+  ],
+  "lr_encoder": 2e-05,
+  "lr_head": 5e-05,
+  "best_epoch": 5,
+  "best_val_f1": 0.7846,
+  "best_threshold": 0.55,
+  "test_accuracy": 0.9175,
+  "test_macro_f1": 0.7792,
+  "test_macro_p": 0.7762,
+  "test_macro_r": 0.7823,
+  "test_f1_hate": 0.6045
+}
