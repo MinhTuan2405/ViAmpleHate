@@ -96,17 +96,120 @@ Build a **Vietnamese hate-target lexicon** and combine it with NER results:
 ```python
 # Add to Cell 5 or a dedicated "Lexicon" cell:
 VIET_TARGET_LEXICON = {
-    # Derogatory pronouns / group markers
+
+    # ── Derogatory pronouns / group markers ──────────────────────
     "thằng", "bọn", "tụi", "đứa", "mấy đứa",
-    # Gender
-    "đàn ông", "đàn bà", "phụ nữ", "con gái", "con trai", "lgbt", "đồng tính",
-    # Regional
-    "người bắc", "dân bắc", "người nam", "người miền nam", "dân nam kỳ",
-    "người hà nội", "người sài gòn",
-    # Ethnicity / religion
-    "người kinh", "người thượng", "dân tộc", "hồi giáo", "thiên chúa giáo",
-    # Occupation (commonly targeted)
-    "công an", "bộ đội", "nhà báo", "giáo viên",
+    "lũ", "đám", "cái loại", "hạng", "loại người",
+    "chúng mày", "chúng nó", "bọn chúng", "mấy thằng",
+    "cái thứ", "đồ", "quân",
+
+    # ── Gender ────────────────────────────────────────────────────
+    "đàn ông", "đàn bà", "phụ nữ", "con gái", "con trai",
+    "người phụ nữ", "người đàn ông", "giới nữ", "giới nam",
+    "đàn bà con gái", "đàn ông con trai",
+    # misogyny-specific
+    "phụ nữ lái xe", "đàn bà mồm",
+
+    # ── Sexual orientation / gender identity ──────────────────────
+    "lgbt", "lgbtq", "đồng tính", "đồng tính luyến ái",
+    "gay", "les", "lesbian", "bisexual", "bi",
+    "chuyển giới", "transgender", "phi nhị giới",
+    "bê đê", "pê đê", "bóng", "bóng lộ",
+    "ái nam ái nữ", "lưỡng tính",
+
+    # ── Regional / geographic ─────────────────────────────────────
+    "người bắc", "dân bắc", "người miền bắc", "bắc kỳ",
+    "người nam", "người miền nam", "dân nam kỳ", "nam kỳ",
+    "người miền trung", "dân miền trung", "trung kỳ",
+    "người hà nội", "người sài gòn", "người hồ chí minh",
+    "dân tỉnh lẻ", "người quê", "dân quê", "nhà quê",
+    "dân ngoại tỉnh", "người ngoại tỉnh",
+    "dân thành thị", "dân nông thôn",
+
+    # ── Ethnicity / nationality ───────────────────────────────────
+    "người kinh", "người thượng", "người dân tộc",
+    "dân tộc thiểu số", "người thiểu số",
+    "người tàu", "người trung quốc", "người hoa", "hoa kiều",
+    "người chăm", "người khmer", "người mường",
+    "người tày", "người nùng", "người hmong", "người mông",
+    "người việt", "việt nam",
+    "người nước ngoài", "tây", "tây ba lô",
+    "việt kiều", "người việt hải ngoại", "người mỹ gốc việt",
+    "người hàn", "người nhật", "người thái",
+    # derogatory
+    "chệt", "chệt hoa",
+
+    # ── Religion / creed ─────────────────────────────────────────
+    "hồi giáo", "đạo hồi", "muslim", "người hồi giáo",
+    "thiên chúa giáo", "công giáo", "đạo thiên chúa",
+    "tin lành", "đạo tin lành",
+    "phật giáo", "đạo phật", "người theo phật",
+    "cao đài", "hòa hảo",
+    "người theo đạo", "con chiên", "tín đồ",
+    "vô thần", "người vô thần",
+
+    # ── Politics / ideology ───────────────────────────────────────
+    "đảng viên", "đảng cộng sản", "cộng sản",
+    "chế độ", "nhà nước", "chính quyền",
+    "phản động", "việt cộng", "thế lực thù địch",
+    "dân chủ", "đối lập", "nhân quyền",
+    "thân cộng", "chống cộng",
+    "tư bản", "xã hội chủ nghĩa",
+
+    # ── Occupation ────────────────────────────────────────────────
+    # law enforcement
+    "công an", "cảnh sát", "cảnh sát giao thông",
+    "bộ đội", "quân đội", "chiến sĩ",
+    # public sector
+    "cán bộ", "quan chức", "lãnh đạo", "chính trị gia",
+    "đại biểu", "nghị sĩ",
+    # media / education
+    "nhà báo", "phóng viên", "báo chí",
+    "giáo viên", "thầy giáo", "cô giáo", "giảng viên",
+    # healthcare
+    "bác sĩ", "y tá", "y bác sĩ", "nhân viên y tế",
+    # legal
+    "luật sư", "thẩm phán",
+    # content creators (targeted on YouTube/Facebook)
+    "youtuber", "tiktoker", "streamer", "influencer",
+    "kol", "idol",
+
+    # ── Social class / economic status ───────────────────────────
+    "người nghèo", "dân nghèo", "hộ nghèo",
+    "người giàu", "nhà giàu", "trọc phú", "đại gia",
+    "tầng lớp trung lưu", "dân lao động",
+    "công nhân", "nông dân", "người lao động",
+    "ăn mày", "vô gia cư", "người vô gia cư",
+
+    # ── Age ───────────────────────────────────────────────────────
+    "người già", "ông già", "bà già", "lão",
+    "cụ già", "người cao tuổi",
+    "giới trẻ", "thanh niên", "lũ trẻ", "bọn nhóc",
+    "thế hệ z", "gen z", "gen y", "millennials",
+    "trẻ trâu",
+
+    # ── Appearance / body / disability ───────────────────────────
+    "người béo", "người mập", "đồ béo",
+    "người gầy", "que củi",
+    "người lùn", "người cao",
+    "người xấu", "người đẹp",
+    "người khuyết tật", "người tàn tật",
+    "người điếc", "người mù", "người câm",
+    "người tâm thần", "người điên",
+
+    # ── Mental health (increasingly targeted on social media) ─────
+    "người trầm cảm", "người lo âu", "bệnh tâm lý",
+    "bệnh tâm thần",
+
+    # ── Immigration / social status ───────────────────────────────
+    "người nhập cư", "dân nhập cư", "người di cư",
+    "người tị nạn",
+
+    # ── Implicit / indirect reference patterns ────────────────────
+    # Patterns that precede group references in hate speech
+    "tất cả", "toàn bộ", "hết thảy",       # "tất cả bọn..."
+    "đặc trưng", "bản chất", "nòi",          # "bản chất của..."
+    "giống nòi", "dòng giống",
 }
 
 class NERProcessor:
