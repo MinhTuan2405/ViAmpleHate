@@ -125,4 +125,15 @@ Classification Report — Test Set
     accuracy                         0.9623     10000
    macro avg     0.8021    0.8292    0.8150     10000
 weighted avg     0.9641    0.9623    0.9631     10000
+
+PhoBert AmpleHate Origin
+Classification Report — Test Set
+              precision    recall  f1-score   support
+
+    NON-HATE     0.9816    0.9807    0.9812      9486
+        HATE     0.6501    0.6615    0.6557       514
+
+    accuracy                         0.9643     10000
+   macro avg     0.8159    0.8211    0.8185     10000
+weighted avg     0.9646    0.9643    0.9644     10000
 ```
