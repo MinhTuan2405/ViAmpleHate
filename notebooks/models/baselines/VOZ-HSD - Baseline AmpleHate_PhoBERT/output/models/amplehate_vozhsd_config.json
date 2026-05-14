@@ -1,0 +1,27 @@
+{
+  "notebook": "voz-hsd-baseline-amplehate-phobert",
+  "dataset": "VOZ-HSD (100k stratified from tarudesu/VOZ-HSD)",
+  "method": "AmpleHate (original, English NER)",
+  "encoder": "vinai/phobert-base",
+  "ner_model": "dbmdz/bert-large-cased-finetuned-conll03-english",
+  "sample_size": 100000,
+  "max_len": 128,
+  "hidden_dim": 768,
+  "e_injection": 1.0,
+  "dropout": 0.1,
+  "num_classes": 2,
+  "label_names": [
+    "NON-HATE",
+    "HATE"
+  ],
+  "lr_encoder": 2e-05,
+  "lr_head": 5e-05,
+  "best_epoch": 2,
+  "best_val_f1": 0.8176,
+  "best_threshold": 0.95,
+  "test_accuracy": 0.9643,
+  "test_macro_f1": 0.8185,
+  "test_macro_p": 0.8159,
+  "test_macro_r": 0.8211,
+  "test_f1_hate": 0.6557
+}
