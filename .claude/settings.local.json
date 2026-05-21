@@ -5,7 +5,9 @@
       "Bash(git commit -m ' *)",
       "Bash(New-Item -ItemType Directory -Force \"D:\\\\WorkSpace\\\\projects\\\\ViAmpleHate\\\\docs\\\\superpowers\\\\specs\")",
       "Bash(Out-Null)",
-      "Bash(Write-Output \"done\")"
+      "Bash(Write-Output \"done\")",
+      "Skill(superpowers:brainstorming)",
+      "Bash(python -c ' *)"
     ]
   }
 }

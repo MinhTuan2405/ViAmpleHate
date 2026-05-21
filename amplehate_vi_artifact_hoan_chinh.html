@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AmpleHate-Vi++ Architecture Artifact</title>
+  <style>
+    :root{
+      --bg:#07111f;
+      --bg2:#0d1a2b;
+      --panel:#102137;
+      --panel2:#132945;
+      --line:#27425f;
+      --text:#e8f1fb;
+      --muted:#9cb3ca;
+      --cyan:#58d0ff;
+      --blue:#70a6ff;
+      --green:#56d8a8;
+      --orange:#ff9d57;
+      --red:#ff7e7e;
+      --yellow:#ffd166;
+      --purple:#b9a3ff;
+      --shadow:0 20px 40px rgba(0,0,0,.25);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:linear-gradient(180deg,var(--bg),#081426 35%, #0a1522 100%);
+      color:var(--text);
+      font:15px/1.65 Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    }
+    .page{max-width:1240px;margin:0 auto;padding:36px 22px 80px}
+    .hero{
+      padding:28px 30px;
+      border:1px solid var(--line);
+      border-radius:24px;
+      background:linear-gradient(180deg,rgba(19,41,69,.92),rgba(10,26,42,.95));
+      box-shadow:var(--shadow);
+      margin-bottom:26px;
+    }
+    .eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--cyan);font-weight:700}
+    h1{margin:10px 0 12px;font-size:34px;line-height:1.15}
+    .subtitle{max-width:930px;color:var(--muted);font-size:15px}
+    .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+    .chip{
+      border:1px solid var(--line);padding:6px 10px;border-radius:999px;
+      background:rgba(255,255,255,.03);font-size:12px;color:var(--muted)
+    }
+
+    .grid{display:grid;grid-template-columns:1.4fr .9fr;gap:20px;margin-bottom:22px}
+    .card{
+      background:linear-gradient(180deg,var(--panel),var(--bg2));
+      border:1px solid var(--line);border-radius:22px;padding:22px;box-shadow:var(--shadow)
+    }
+    .card h2,.card h3{margin:0 0 10px}
+    .muted{color:var(--muted)}
+
+    .pipeline{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;align-items:center;margin-top:18px}
+    .node{
+      min-height:132px;border:1px solid var(--line);border-radius:18px;padding:14px 12px;
+      background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));
+      position:relative
+    }
+    .node .tag{display:inline-block;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:700;margin-bottom:10px}
+    .node h4{margin:0 0 6px;font-size:15px}
+    .node p{margin:0;color:var(--muted);font-size:13px;line-height:1.45}
+    .arrow{display:flex;justify-content:center;align-items:center;color:var(--muted);font-size:26px}
+    .t-cyan{color:var(--cyan)} .t-orange{color:var(--orange)} .t-yellow{color:var(--yellow)} .t-blue{color:var(--blue)} .t-green{color:var(--green)} .t-purple{color:var(--purple)}
+    .bg-cyan{background:rgba(88,208,255,.12);color:var(--cyan);border:1px solid rgba(88,208,255,.24)}
+    .bg-orange{background:rgba(255,157,87,.12);color:var(--orange);border:1px solid rgba(255,157,87,.24)}
+    .bg-yellow{background:rgba(255,209,102,.12);color:var(--yellow);border:1px solid rgba(255,209,102,.24)}
+    .bg-blue{background:rgba(112,166,255,.12);color:var(--blue);border:1px solid rgba(112,166,255,.24)}
+    .bg-green{background:rgba(86,216,168,.12);color:var(--green);border:1px solid rgba(86,216,168,.24)}
+    .bg-purple{background:rgba(185,163,255,.12);color:var(--purple);border:1px solid rgba(185,163,255,.24)}
+
+    .section-title{display:flex;align-items:center;gap:12px;margin:0 0 14px}
+    .section-title .badge{
+      width:34px;height:34px;border-radius:12px;display:grid;place-items:center;font-weight:800;font-size:15px;border:1px solid var(--line)
+    }
+
+    .cols-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .cols-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    .mini{
+      border:1px solid var(--line);border-radius:16px;padding:14px;background:rgba(255,255,255,.03)
+    }
+    .mini h4{margin:0 0 8px;font-size:14px}
+    .mini p,.mini li{font-size:13px;color:var(--muted)}
+    ul{margin:8px 0 0 18px;padding:0}
+
+    .formula{
+      font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+      background:#091321;border:1px solid var(--line);border-radius:16px;padding:14px 16px;
+      color:#dfeaff;font-size:14px;overflow:auto
+    }
+    .formula b{color:var(--yellow)}
+
+    .flowbox{display:grid;grid-template-columns:1fr;gap:12px}
+    .example{
+      border:1px dashed var(--line);border-radius:16px;padding:14px;background:rgba(255,255,255,.025)
+    }
+    .tokenline{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+    .tok{padding:5px 9px;border-radius:10px;font-size:13px;border:1px solid var(--line);background:#0b1625}
+    .tok.c1{border-color:rgba(255,157,87,.45);background:rgba(255,157,87,.12);color:var(--orange)}
+    .tok.c2{border-color:rgba(255,126,126,.45);background:rgba(255,126,126,.12);color:var(--red)}
+    .tok.c3{border-color:rgba(255,209,102,.45);background:rgba(255,209,102,.12);color:var(--yellow)}
+    .tok.c4{border-color:rgba(88,208,255,.45);background:rgba(88,208,255,.12);color:var(--cyan)}
+    .tok.c5{border-color:rgba(86,216,168,.45);background:rgba(86,216,168,.12);color:var(--green)}
+    .tok.c6{border-color:rgba(185,163,255,.45);background:rgba(185,163,255,.12);color:var(--purple)}
+
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th,td{padding:10px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+    th{text-align:left;color:#c7daf1;font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+    tr:last-child td{border-bottom:none}
+
+    .note{padding:14px 16px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--muted)}
+    .good{border-color:rgba(86,216,168,.28);background:rgba(86,216,168,.08)}
+    .warn{border-color:rgba(255,157,87,.28);background:rgba(255,157,87,.08)}
+
+    .footer{margin-top:22px;padding:18px 20px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.03);color:var(--muted);font-size:13px}
+
+    @media (max-width: 980px){
+      .grid,.cols-2,.cols-3{grid-template-columns:1fr}
+      .pipeline{grid-template-columns:1fr;gap:8px}
+      .arrow{transform:rotate(90deg)}
+      h1{font-size:28px}
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="hero">
+      <div class="eyebrow">Artifact hoàn chỉnh · Kiến trúc đề xuất</div>
+      <h1>AmpleHate-Vi++ cho implicit hate tiếng Việt<br>trong bối cảnh <span class="t-yellow">không chia target</span></h1>
+      <div class="subtitle">
+        Bản này giữ lõi suy luận của AmpleHate gốc, nhưng sửa phần khuếch đại và nhận diện tín hiệu để phù hợp với tiếng Việt, dữ liệu social media, và bài toán khám phá implicit target thay vì giả định sẵn nhãn target category.
+      </div>
+      <div class="chips">
+        <span class="chip">Giữ: explicit target + implicit target + relation + direct injection</span>
+        <span class="chip">Sửa: per-target gate → instance-adaptive gate</span>
+        <span class="chip">Thêm: target cue / attack cue disentanglement</span>
+        <span class="chip">Thêm: negation, discourse, syllable auxiliary</span>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-title">
+        <div class="badge bg-cyan">Σ</div>
+        <h2>Ảnh mô tả kiến trúc hoàn chỉnh</h2>
+      </div>
+      <div class="pipeline">
+        <div class="node">
+          <div class="tag bg-cyan">Mới</div>
+          <h4 class="t-cyan">P1. Vietnamese Preprocess</h4>
+          <p>Chuẩn hóa teen code, khôi phục dấu, gắn tag emoji, phát hiện code-switch.</p>
+        </div>
+        <div class="arrow">→</div>
+        <div class="node">
+          <div class="tag bg-orange">Mở rộng</div>
+          <h4 class="t-orange">P2. Multi-signal Target Cue Mining</h4>
+          <p>NER + đại từ miệt thị + nominal group cue + implicit [CLS].</p>
+        </div>
+        <div class="arrow">→</div>
+        <div class="node">
+          <div class="tag bg-yellow">Mới</div>
+          <h4 class="t-yellow">P3. Syllable/OOV Auxiliary</h4>
+          <p>Char-CNN hoặc syllable encoder để cứu token OOV, viết méo, viết tắt.</p>
+        </div>
+        <div class="arrow">→</div>
+        <div class="node">
+          <div class="tag bg-blue">Mở rộng</div>
+          <h4 class="t-blue">P4. Relation Bank</h4>
+          <p>r<sub>exp</sub> + r<sub>imp</sub> + r<sub>neg</sub> + r<sub>disc</sub> + r<sub>atk</sub>.</p>
+        </div>
+        <div class="arrow">→</div>
+        <div class="node">
+          <div class="tag bg-green">Sửa trọng yếu</div>
+          <h4 class="t-green">P5. Instance-adaptive Injection</h4>
+          <p>Gate học theo từng câu, không phụ thuộc schema target cố định.</p>
+        </div>
+        <div class="arrow">→</div>
+        <div class="node">
+          <div class="tag bg-purple">Output</div>
+          <h4 class="t-purple">Classifier</h4>
+          <p>Implicit hate / non-hate, có thể kèm auxiliary target discovery score.</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="grid">
+      <section class="card">
+        <div class="section-title">
+          <div class="badge bg-orange">1</div>
+          <h2>Lõi thiết kế sau khi sửa</h2>
+        </div>
+        <div class="flowbox">
+          <div class="formula">
+            H = Encoder(X)<br>
+            I<sub>exp</sub> = NER ∪ DPron ∪ NominalGroupCue<br>
+            H<sub>exp</sub> = [h<sub>i</sub>] for i ∈ I<sub>exp</sub><br>
+            h<sub>imp</sub> = h<sub>[CLS]</sub><br><br>
+            r<sub>exp</sub> = Attn(h<sub>0</sub>, H<sub>exp</sub>, h<sub>0</sub>)<br>
+            r<sub>imp</sub> = Attn(h<sub>0</sub>, h<sub>0</sub>, h<sub>0</sub>)<br>
+            r<sub>neg</sub> = Attn(h<sub>0</sub>, H<sub>neg</sub>, h<sub>0</sub>)<br>
+            r<sub>disc</sub> = Attn(h<sub>0</sub>, H<sub>disc</sub>, h<sub>0</sub>)<br>
+            r<sub>atk</sub> = Attn(h<sub>0</sub>, H<sub>attack</sub>, h<sub>0</sub>)<br><br>
+            r = W<sub>r</sub>[r<sub>exp</sub>; r<sub>imp</sub>; r<sub>neg</sub>; r<sub>disc</sub>; r<sub>atk</sub>]<br>
+            g = σ(MLP([h<sub>0</sub>; r; c]))<br>
+            <b>z = h<sub>0</sub> + g ⊙ r</b>
+          </div>
+          <div class="note good">
+            <strong class="t-green">Ý chính</strong><br>
+            Thay vì đặt λ theo từng loại target, bản hoàn chỉnh dùng gate <em>theo từng instance</em>. Gate nhìn vào toàn bộ câu và vector quan hệ vừa học, nên phù hợp hơn khi dữ liệu không chia target và mục tiêu là khám phá target ngầm.
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-title">
+          <div class="badge bg-green">2</div>
+          <h2>Vì sao sửa gate</h2>
+        </div>
+        <table>
+          <thead>
+            <tr><th>Bản cũ</th><th>Rủi ro</th><th>Bản sửa</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Per-target gate λ<sub>t</sub></td>
+              <td>Ngầm giả định đã biết schema target ổn định</td>
+              <td>Instance-adaptive gate g(x)</td>
+            </tr>
+            <tr>
+              <td>Gate theo category</td>
+              <td>Khó tổng quát khi target mơ hồ, trộn nhiều nhóm</td>
+              <td>Gate theo bằng chứng trong câu</td>
+            </tr>
+            <tr>
+              <td>Amplify theo prior</td>
+              <td>Dễ overfit vào phân bố dataset</td>
+              <td>Amplify theo context hiện tại</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="note warn" style="margin-top:12px">
+          <strong class="t-orange">Khuyến nghị huấn luyện</strong><br>
+          Dùng scalar gate trước để ổn định. Sau đó mới thử vector gate theo chiều hidden để tăng độ linh hoạt.
+        </div>
+      </section>
+    </div>
+
+    <section class="card" style="margin-bottom:20px">
+      <div class="section-title">
+        <div class="badge bg-orange">3</div>
+        <h2>Target cue và attack cue nên tách riêng</h2>
+      </div>
+      <div class="cols-2">
+        <div class="mini">
+          <h4 class="t-orange">Target cue</h4>
+          <p>Là tín hiệu giúp mô hình biết đang nhắm vào ai hoặc nhóm nào. Không nhất thiết là lời công kích.</p>
+          <div class="tokenline">
+            <span class="tok c1">bọn</span>
+            <span class="tok c1">thằng</span>
+            <span class="tok c1">đám này</span>
+            <span class="tok c1">bên đó</span>
+            <span class="tok c1">người Bắc</span>
+          </div>
+        </div>
+        <div class="mini">
+          <h4 class="t-red">Attack cue</h4>
+          <p>Là tín hiệu phán xét, xúc phạm, quy chụp, đổ lỗi. Có thể đi kèm target hoặc đứng xa target trong câu.</p>
+          <div class="tokenline">
+            <span class="tok c2">ngu</span>
+            <span class="tok c2">hèn</span>
+            <span class="tok c2">phản quốc</span>
+            <span class="tok c2">ký sinh</span>
+            <span class="tok c2">ăn bám</span>
+          </div>
+        </div>
+      </div>
+      <div class="note" style="margin-top:14px">
+        Trong bản HTML đầu, hate lexicon đang bị kéo vào phần target identification. Điều đó hữu ích để tăng recall, nhưng về mặt mô hình học biểu diễn thì nên chuyển phần lớn lexicon sang <strong>attack cue bank</strong>, còn target bank chỉ giữ lexicon nào thật sự đóng vai trò quy chiếu target.
+      </div>
+    </section>
+
+    <section class="card" style="margin-bottom:20px">
+      <div class="section-title">
+        <div class="badge bg-blue">4</div>
+        <h2>Mô tả từng khối</h2>
+      </div>
+      <div class="cols-3">
+        <div class="mini">
+          <h4 class="t-cyan">P1. Vietnamese Preprocess</h4>
+          <ul>
+            <li>Expand teen code và profanity shorthand</li>
+            <li>Khôi phục dấu cho token nghi ngờ</li>
+            <li>Map emoji sang semantic tags như ANGER, MOCK, DISGUST</li>
+            <li>Đánh dấu code-switch để tránh mất tín hiệu</li>
+          </ul>
+        </div>
+        <div class="mini">
+          <h4 class="t-orange">P2. Multi-signal Target Cue Mining</h4>
+          <ul>
+            <li>Giữ NER cho entity tường minh</li>
+            <li>Thêm derogatory pronoun detector</li>
+            <li>Thêm nominal group cue như "người X", "bọn X"</li>
+            <li>Dùng [CLS] như implicit target anchor</li>
+          </ul>
+        </div>
+        <div class="mini">
+          <h4 class="t-yellow">P3. Syllable/OOV Auxiliary</h4>
+          <ul>
+            <li>Rescue token viết méo, viết liền, cố ý sai</li>
+            <li>Đặc biệt hợp với tiếng Việt đơn vị âm tiết</li>
+            <li>Ghép với embedding gốc qua residual fusion</li>
+          </ul>
+        </div>
+        <div class="mini">
+          <h4 class="t-blue">P4. Relation Bank</h4>
+          <ul>
+            <li>r_exp cho explicit target</li>
+            <li>r_imp cho global implicit cue</li>
+            <li>r_neg cho phủ định, đảo cực tính</li>
+            <li>r_disc cho nhỉ, mà, cơ, đấy, chứ</li>
+            <li>r_atk cho attack lexicon và predicate đánh giá</li>
+          </ul>
+        </div>
+        <div class="mini">
+          <h4 class="t-green">P5. Adaptive Injection</h4>
+          <ul>
+            <li>g học từ sentence state và relation state</li>
+            <li>Không hard-code mức khuếch đại theo target</li>
+            <li>Ổn hơn khi implicit target chưa rõ</li>
+          </ul>
+        </div>
+        <div class="mini">
+          <h4 class="t-purple">Auxiliary heads tùy chọn</h4>
+          <ul>
+            <li>Target discovery score</li>
+            <li>Attack polarity score</li>
+            <li>Negation consistency loss</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <div class="grid">
+      <section class="card">
+        <div class="section-title">
+          <div class="badge bg-yellow">5</div>
+          <h2>Ví dụ chạy qua pipeline</h2>
+        </div>
+        <div class="example">
+          <div><strong>Câu đầu vào</strong>: “Bọn đó có văn minh gì đâu, toàn thứ ăn bám nhỉ 🙃”</div>
+          <div class="tokenline">
+            <span class="tok c1">Bọn</span>
+            <span class="tok c1">đó</span>
+            <span class="tok c2">ăn bám</span>
+            <span class="tok c5">nhỉ</span>
+            <span class="tok c4">🙃 → [MOCK]</span>
+            <span class="tok c6">[CLS]</span>
+          </div>
+          <ul>
+            <li><span class="t-orange">Target cue</span>: “Bọn đó”</li>
+            <li><span class="t-red">Attack cue</span>: “ăn bám”</li>
+            <li><span class="t-green">Discourse cue</span>: “nhỉ” + emoji mock</li>
+            <li><span class="t-purple">Implicit anchor</span>: [CLS]</li>
+          </ul>
+        </div>
+        <div class="formula" style="margin-top:12px">
+          r = fuse(r_exp, r_imp, r_disc, r_atk)<br>
+          g = σ(MLP([h₀; r; cue_stats]))<br>
+          z = h₀ + g ⊙ r
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-title">
+          <div class="badge bg-purple">6</div>
+          <h2>Cấu hình triển khai gợi ý</h2>
+        </div>
+        <table>
+          <tbody>
+            <tr><th>Backbone</th><td>phoBERT-large hoặc viDeBERTa nếu ưu tiên tiếng Việt</td></tr>
+            <tr><th>NER</th><td>NER tiếng Việt, không dùng trực tiếp NER tiếng Anh như bản gốc</td></tr>
+            <tr><th>Gate</th><td>Scalar gate trước, vector gate sau</td></tr>
+            <tr><th>Loss</th><td>CE chính + auxiliary discovery/negation loss nhẹ</td></tr>
+            <tr><th>Ablation nên có</th><td>−neg, −disc, −atk, −aux, λ fixed vs adaptive gate</td></tr>
+          </tbody>
+        </table>
+      </section>
+    </div>
+
+    <section class="card">
+      <div class="section-title">
+        <div class="badge bg-green">7</div>
+        <h2>Kết luận thiết kế</h2>
+      </div>
+      <div class="cols-2">
+        <div class="note good">
+          <strong class="t-green">Nên chốt</strong><br>
+          Kiến trúc hoàn chỉnh nên được mô tả là một biến thể <em>target-aware but target-agnostic in amplification</em>: vẫn tôn trọng trực giác của AmpleHate, nhưng không buộc bài toán phải có target split hay target schema đóng.
+        </div>
+        <div class="note warn">
+          <strong class="t-orange">Không nên giữ nguyên</strong><br>
+          Per-target gate theo religion/race/politics trong artifact cũ. Nó đẹp để trình bày, nhưng chưa hợp với bối cảnh dữ liệu của bạn và dễ bị phản biện khi reviewer hỏi target category đến từ đâu.
+        </div>
+      </div>
+    </section>
+
+    <div class="footer">
+      Artifact này được viết lại để dùng làm hình mô tả kiến trúc, phụ lục kỹ thuật, hoặc nền cho figure trong luận văn/bài báo. Có thể tiếp tục chuyển sang bản “figure camera-ready” hoặc bản “HTML poster” nếu cần.
+    </div>
+  </div>
+</body>
+</html>
