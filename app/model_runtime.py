@@ -16,7 +16,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
-from transformers import AutoModel, AutoTokenizer
+from transformers import AutoModel, AutoTokenizer, pipeline
 
 os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
 
@@ -28,6 +28,7 @@ except Exception:  # pragma: no cover - app still runs with basic whitespace tok
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 BASELINES_DIR = ROOT_DIR / "notebooks" / "models" / "baselines"
+PROPOSED_DIR = ROOT_DIR / "notebooks" / "models" / "proposed"
 LABEL_NAMES = ["NON-HATE", "HATE"]
 
 
@@ -171,6 +172,26 @@ TEENCODE_MAP = {
 }
 
 
+EMOJI_MAP = {
+    "🙃": " [MOCK] ",
+    "😏": " [MOCK] ",
+    "😒": " [MOCK] ",
+    "😡": " [ANGER] ",
+    "🤬": " [ANGER] ",
+    "😤": " [ANGER] ",
+    "🤮": " [DISGUST] ",
+    "😖": " [DISGUST] ",
+    "😂": " [LAUGH] ",
+    "🤣": " [LAUGH] ",
+    "😭": " [SAD] ",
+    "💔": " [SAD] ",
+    "🔥": " [INTENSE] ",
+    "💀": " [DEATH] ",
+    "👍": " [APPROVE] ",
+    "👎": " [DISAPPROVE] ",
+}
+
+
 def normalize_text(text: str) -> str:
     if not isinstance(text, str):
         return ""
@@ -191,6 +212,29 @@ def preprocess(text: str) -> str:
         return ""
     if word_tokenize is None:
         return text
+
+
+def normalize_text_proposed(text: str) -> str:
+    if not isinstance(text, str):
+        return ""
+    for emoji, tag in EMOJI_MAP.items():
+        text = text.replace(emoji, tag)
+    return normalize_text(text)
+
+
+def segment_text(text: str) -> str:
+    if not text:
+        return ""
+    if word_tokenize is None:
+        return text
+    try:
+        return word_tokenize(text, format="text")
+    except Exception:
+        return text
+
+
+def preprocess_proposed(text: str) -> str:
+    return segment_text(normalize_text_proposed(text))
     try:
         return word_tokenize(text, format="text")
     except Exception:
@@ -420,6 +464,209 @@ class AmpleHatePhoBERT(nn.Module):
         return self.classifier(final_embedding)
 
 
+TARGET_CUES = [
+    "bọn",
+    "thằng",
+    "con",
+    "đứa",
+    "tụi",
+    "đám",
+    "lũ",
+    "mấy",
+    "loại",
+    "người",
+    "dân",
+    "bên",
+    "hắn",
+    "chúng",
+    "họ",
+    "nó",
+]
+
+ATTACK_CUES = [
+    "ngu",
+    "đần",
+    "ngu_ngốc",
+    "khùng",
+    "điên",
+    "hèn",
+    "nhục",
+    "ăn_bám",
+    "ký_sinh",
+    "phản_quốc",
+    "vô_học",
+    "man_rợ",
+    "cút",
+    "xéo",
+    "câm_miệng",
+    "giết",
+    "chém",
+    "đánh",
+    "ghét",
+    "khinh",
+    "chửi",
+    "vô_văn_hóa",
+    "thấp_hèn",
+    "đáng_chết",
+]
+
+
+class VietnameseNERTagger:
+    def __init__(self, model_name: str):
+        self.ner_pipeline = pipeline(
+            "ner",
+            model=model_name,
+            aggregation_strategy="simple",
+            device=-1,
+        )
+
+    def extract_named_entities(self, text: str) -> list[str]:
+        target_groups = {"PER", "ORG", "LOC", "GPE", "NORP", "MISC"}
+        try:
+            entities = self.ner_pipeline(text)
+        except Exception:
+            return []
+
+        results = []
+        for entity in entities:
+            word = entity.get("word")
+            group = entity.get("entity_group") or entity.get("entity", "")
+            group = str(group).split("-")[-1]
+            if word and group in target_groups:
+                results.append(str(word))
+        return results
+
+
+class MultiSignalProcessor:
+    def __init__(
+        self,
+        tokenizer: AutoTokenizer,
+        max_len: int,
+        ner_tagger: VietnameseNERTagger | None = None,
+        use_ner: bool = True,
+    ):
+        self.tokenizer = tokenizer
+        self.max_len = max_len
+        self.ner_tagger = ner_tagger
+        self.use_ner = use_ner
+        self.target_cue_tokens = self._tokenize_cue_bank(TARGET_CUES)
+        self.attack_cue_tokens = self._tokenize_cue_bank(ATTACK_CUES)
+
+    def _tokenize_phrase(self, phrase: str) -> list[str]:
+        phrase = segment_text(normalize_text_proposed(phrase))
+        return self.tokenizer.tokenize(phrase) if phrase else []
+
+    def _tokenize_cue_bank(self, cue_list: list[str]) -> list[list[str]]:
+        return [tokens for tokens in (self._tokenize_phrase(cue) for cue in cue_list) if tokens]
+
+    def _find_token_sequence_positions(
+        self,
+        tokens: list[str],
+        cue_token_lists: list[list[str]],
+    ) -> list[int]:
+        positions = []
+        max_token_pos = min(len(tokens), self.max_len - 2)
+        for cue_tokens in cue_token_lists:
+            n = len(cue_tokens)
+            if n == 0 or n > max_token_pos:
+                continue
+            for i in range(max_token_pos - n + 1):
+                if tokens[i : i + n] == cue_tokens:
+                    positions.append(i + 1)
+        return sorted(set(positions))
+
+    def tokenize_and_encode(self, text: str, raw_text: str | None = None) -> tuple[list[int], list[int], list[int], list[int]]:
+        tokens = self.tokenizer.tokenize(text)
+        encoding = self.tokenizer(
+            text,
+            truncation=True,
+            padding="max_length",
+            max_length=self.max_len,
+        )
+
+        head_positions = []
+        if self.use_ner and self.ner_tagger is not None:
+            ner_text = raw_text if raw_text is not None else text.replace("_", " ")
+            ner_cues = [self._tokenize_phrase(entity) for entity in self.ner_tagger.extract_named_entities(ner_text)]
+            head_positions += self._find_token_sequence_positions(tokens, [cue for cue in ner_cues if cue])
+        head_positions += self._find_token_sequence_positions(tokens, self.target_cue_tokens)
+        head_positions = sorted(set(head_positions)) or [0]
+
+        attack_positions = self._find_token_sequence_positions(tokens, self.attack_cue_tokens) or [0]
+        return encoding["input_ids"], head_positions, attack_positions, encoding["attention_mask"]
+
+
+class RelationHeadAttention(nn.Module):
+    def __init__(self, hidden_dim: int, head_dim: int):
+        super().__init__()
+        self.head_dim = head_dim
+        self.softmax = nn.Softmax(dim=-1)
+        self.W_q = nn.Linear(hidden_dim, head_dim, bias=False)
+        self.W_k = nn.Linear(hidden_dim, head_dim, bias=False)
+        self.W_v = nn.Linear(hidden_dim, head_dim, bias=False)
+
+    def forward(
+        self,
+        cls_embedding: torch.Tensor,
+        head_token_embeddings: torch.Tensor,
+        attention_mask: torch.Tensor | None = None,
+    ) -> torch.Tensor:
+        q_h = self.W_q(cls_embedding).unsqueeze(1)
+        k_h = self.W_k(head_token_embeddings)
+        v_h = self.W_v(head_token_embeddings)
+        scores = torch.bmm(q_h, k_h.transpose(1, 2)).squeeze(1) / (self.head_dim**0.5)
+        if attention_mask is not None:
+            scores = scores.masked_fill(attention_mask == 0, float("-inf"))
+        weights = self.softmax(scores.float())
+        return torch.bmm(weights.unsqueeze(1), v_h).squeeze(1)
+
+
+class ViAmpleHatePhoBERT(nn.Module):
+    def __init__(self, model_name: str, hidden_dim: int, num_classes: int, dropout: float):
+        super().__init__()
+        self.bert = AutoModel.from_pretrained(model_name)
+        self.hidden_dim = hidden_dim
+        self.head_attn_exp = RelationHeadAttention(hidden_dim, hidden_dim)
+        self.head_attn_imp = RelationHeadAttention(hidden_dim, hidden_dim)
+        self.head_attn_atk = RelationHeadAttention(hidden_dim, hidden_dim)
+        self.relation_proj = nn.Linear(hidden_dim * 3, hidden_dim)
+        self.gate_proj = nn.Linear(hidden_dim * 2, 1)
+        self.dropout = nn.Dropout(dropout)
+        self.classifier = nn.Linear(hidden_dim, num_classes)
+
+    def forward(
+        self,
+        input_ids: torch.Tensor,
+        head_token_idx: torch.Tensor,
+        attack_token_idx: torch.Tensor,
+        attention_mask: torch.Tensor,
+        head_mask: torch.Tensor | None = None,
+        attack_mask: torch.Tensor | None = None,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        hidden = self.bert(input_ids=input_ids, attention_mask=attention_mask).last_hidden_state
+        cls_emb = hidden[:, 0, :]
+        if head_mask is None:
+            head_mask = torch.ones(head_token_idx.shape, dtype=torch.long, device=hidden.device)
+        if attack_mask is None:
+            attack_mask = torch.ones(attack_token_idx.shape, dtype=torch.long, device=hidden.device)
+
+        exp_idx = head_token_idx.unsqueeze(-1).expand(-1, -1, self.hidden_dim)
+        target_emb = torch.gather(hidden, 1, exp_idx)
+        atk_idx = attack_token_idx.unsqueeze(-1).expand(-1, -1, self.hidden_dim)
+        attack_emb = torch.gather(hidden, 1, atk_idx)
+
+        implicit_emb = cls_emb.unsqueeze(1)
+        implicit_mask = torch.ones((cls_emb.size(0), 1), dtype=torch.long, device=hidden.device)
+        r_exp = self.head_attn_exp(cls_emb, target_emb, attention_mask=head_mask)
+        r_imp = self.head_attn_imp(cls_emb, implicit_emb, attention_mask=implicit_mask)
+        r_atk = self.head_attn_atk(cls_emb, attack_emb, attention_mask=attack_mask)
+
+        r_fused = self.relation_proj(torch.cat([r_exp, r_imp, r_atk], dim=-1))
+        gate = torch.sigmoid(self.gate_proj(torch.cat([cls_emb, r_fused], dim=-1)))
+        z = cls_emb + gate * r_fused
+        return self.classifier(self.dropout(z)), z
+
+
 @dataclass(frozen=True)
 class ModelSpec:
     id: str
@@ -446,6 +693,7 @@ def make_specs() -> list[ModelSpec]:
     voz_cnn = BASELINES_DIR / "VOZ-HSD - Baseline PhoBERT_CNN"
     vihsd_ample = BASELINES_DIR / "ViHSD - Baseline AmpleHate_PhoBERT"
     voz_ample = BASELINES_DIR / "VOZ-HSD - Baseline AmpleHate_PhoBERT"
+    vihsd_proposed = PROPOSED_DIR / "ViHSD - Proposed ViAmpleHate_PhoBERT"
 
     return [
         ModelSpec(
@@ -492,6 +740,15 @@ def make_specs() -> list[ModelSpec]:
             base_dir=vihsd_ample,
             checkpoint_path=vihsd_ample / "output" / "best_amplehate_phobert_vihsd.pt",
             config_path=vihsd_ample / "output" / "models" / "amplehate_config.json",
+        ),
+        ModelSpec(
+            id="vihsd_viamplehate_proposed",
+            dataset="ViHSD",
+            model="ViAmpleHate++ + PhoBERT",
+            kind="viamplehate_proposed",
+            base_dir=vihsd_proposed,
+            checkpoint_path=vihsd_proposed / "output" / "best_viamplehate_phobert_vihsd.pt",
+            config_path=vihsd_proposed / "output" / "models" / "viamplehate_config.json",
         ),
         ModelSpec(
             id="voz_tfidf_lr",
@@ -755,6 +1012,61 @@ class AmpleHatePredictor(TorchPredictor):
         return prediction_payload(self.spec, pred_id, probs, latency_ms, device.type, processed, self.metrics())
 
 
+class ViAmpleHateProposedPredictor(TorchPredictor):
+    def __init__(self, spec: ModelSpec):
+        super().__init__(spec)
+        assert spec.config_path is not None and spec.checkpoint_path is not None
+        self.config = load_json(spec.config_path)
+        self.max_len = int(self.config["max_len"])
+        self.tokenizer = AutoTokenizer.from_pretrained(self.config["encoder"])
+        use_ner = bool(self.config.get("use_ner_at_eval", True))
+        ner_tagger = VietnameseNERTagger(self.config["ner_model"]) if use_ner else None
+        self.processor = MultiSignalProcessor(
+            self.tokenizer,
+            max_len=self.max_len,
+            ner_tagger=ner_tagger,
+            use_ner=use_ner,
+        )
+        self.model = ViAmpleHatePhoBERT(
+            model_name=self.config["encoder"],
+            hidden_dim=int(self.config["hidden_dim"]),
+            num_classes=int(self.config["num_classes"]),
+            dropout=float(self.config["dropout"]),
+        )
+        checkpoint = torch_load(spec.checkpoint_path)
+        state_dict = checkpoint["model"] if isinstance(checkpoint, dict) and "model" in checkpoint else checkpoint
+        self.threshold = float(
+            checkpoint.get("threshold", self.config.get("best_threshold", 0.5))
+            if isinstance(checkpoint, dict)
+            else self.config.get("best_threshold", 0.5)
+        )
+        self.config["best_threshold"] = self.threshold
+        self.model.load_state_dict(state_dict)
+        self.model.eval()
+
+    def _predict_on_device(self, text: str, device: torch.device) -> dict[str, Any]:
+        start = time.perf_counter()
+        raw = normalize_text_proposed(text)
+        processed = segment_text(raw)
+        token_ids, head_idx, attack_idx, attention_mask = self.processor.tokenize_and_encode(processed, raw)
+        self.model.to(device)
+        self.model.eval()
+
+        with torch.inference_mode():
+            input_ids = torch.tensor([token_ids], dtype=torch.long, device=device)
+            heads = torch.tensor([head_idx], dtype=torch.long, device=device)
+            attacks = torch.tensor([attack_idx], dtype=torch.long, device=device)
+            head_mask = torch.ones((1, len(head_idx)), dtype=torch.long, device=device)
+            attack_mask = torch.ones((1, len(attack_idx)), dtype=torch.long, device=device)
+            attn = torch.tensor([attention_mask], dtype=torch.long, device=device)
+            logits, _ = self.model(input_ids, heads, attacks, attn, head_mask, attack_mask)
+
+        probs = np.array(softmax_probs(logits), dtype=np.float64)
+        pred_id = int(probs[1] >= self.threshold)
+        latency_ms = (time.perf_counter() - start) * 1000
+        return prediction_payload(self.spec, pred_id, probs, latency_ms, device.type, processed, self.metrics())
+
+
 def prediction_payload(
     spec: ModelSpec,
     pred_id: int,
@@ -806,4 +1118,6 @@ def build_predictor(spec_id: str) -> BasePredictor:
         return PhoBERTCNNPredictor(spec)
     if spec.kind == "amplehate":
         return AmpleHatePredictor(spec)
+    if spec.kind == "viamplehate_proposed":
+        return ViAmpleHateProposedPredictor(spec)
     raise ValueError(f"Unsupported model kind: {spec.kind}")

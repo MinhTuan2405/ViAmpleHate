@@ -67,6 +67,25 @@ Classification Report — Test Set
     accuracy                         0.9175      6680
    macro avg     0.7762    0.7823    0.7792      6680
 weighted avg     0.9184    0.9175    0.9180      6680
+
+PhoBert ViAmpleHate 
+              precision    recall  f1-score   support
+
+    NON-HATE     0.9541    0.9574    0.9558      5992
+        HATE     0.6177    0.5988    0.6081       688
+
+    accuracy                         0.9205      6680
+   macro avg     0.7859    0.7781    0.7819      6680
+weighted avg     0.9195    0.9205    0.9200      6680
+
+--------------------------
+Summary
+Accuracy        : 0.9205   (baseline: 0.9175, Δ=+0.0030)
+Macro Precision : 0.7859   (baseline: 0.7762, Δ=+0.0097)
+Macro Recall    : 0.7781   (baseline: 0.7823, Δ=-0.0042)
+Macro F1        : 0.7819   (baseline: 0.7792, Δ=+0.0027)
+F1 (HATE)       : 0.6081   (baseline: 0.6045, Δ=+0.0036)
+
 ```
 
 # VOZ-HSD dataset

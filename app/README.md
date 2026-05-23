@@ -1,6 +1,6 @@
 # ViAmpleHate Demo App
 
-Streamlit app chạy cùng một input qua 10 baseline models trong `notebooks/models/baselines`.
+Streamlit app chạy cùng một input qua các baseline models trong `notebooks/models/baselines` và ViHSD proposed ViAmpleHate++ PhoBERT trong `notebooks/models/proposed`.
 
 ## Chạy local
 
@@ -17,4 +17,4 @@ Nếu muốn dùng CUDA trên Windows, cài PyTorch theo lệnh chính thức t�
 
 - App load model theo cache của Streamlit, nên lần đầu sẽ chậm hơn các lần sau.
 - Với GPU 4GB VRAM, app chạy các model PyTorch tuần tự và offload về CPU sau mỗi lượt inference.
-- Nếu chưa có cache HuggingFace, lần đầu dùng PhoBERT sẽ cần internet để tải `vinai/phobert-base`.
+- Nếu chưa có cache HuggingFace, lần đầu dùng PhoBERT/NER sẽ cần internet để tải `vinai/phobert-base` và `NlpHUST/ner-vietnamese-electra-base`.

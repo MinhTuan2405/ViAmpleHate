@@ -23,8 +23,8 @@ def run_model(spec_id: str, text: str, device_mode: str) -> dict:
     return predictor.predict(text, device_mode=device_mode)
 
 
-st.title("ViAmpleHate Baseline Demo")
-st.caption("Nhập một câu văn bản và chạy qua 10 baseline models: ViHSD + VOZ-HSD, TF-IDF/LR/SVM, BiLSTM, PhoBERT-CNN, AmpleHate-PhoBERT.")
+st.title("ViAmpleHate Demo")
+st.caption("Nhập một câu văn bản và chạy qua các baseline models cùng ViHSD proposed ViAmpleHate++ PhoBERT.")
 
 with st.sidebar:
     st.header("Cấu hình")
@@ -100,6 +100,6 @@ if run_clicked:
         st.subheader("Kết quả cuối cùng của từng model")
         st.dataframe(df, use_container_width=True, hide_index=True)
 
-        st.caption("Lần chạy đầu có thể lâu vì phải load checkpoint và tải/cache PhoBERT từ HuggingFace nếu máy chưa có sẵn.")
+    st.caption("Lần chạy đầu có thể lâu vì phải load checkpoint và tải/cache PhoBERT/NER từ HuggingFace nếu máy chưa có sẵn.")
 else:
-    st.info("Bấm nút chạy để predict qua 10 model. Lần đầu load PhoBERT có thể mất vài phút.")
+    st.info("Bấm nút chạy để predict qua các model đã chọn. Lần đầu load PhoBERT/NER có thể mất vài phút.")
