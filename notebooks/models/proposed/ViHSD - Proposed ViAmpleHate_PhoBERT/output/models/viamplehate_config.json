@@ -1,0 +1,31 @@
+{
+  "notebook": "vihsd-viamplehate-phobert-proposed",
+  "method": "AmpleHate-Vi++ (Viet NER + target/attack cues + adaptive gate)",
+  "encoder": "vinai/phobert-base",
+  "ner_model": "NlpHUST/ner-vietnamese-electra-base",
+  "max_len": 256,
+  "hidden_dim": 768,
+  "grad_accum": 2,
+  "alpha_cl": 0.1,
+  "use_ner_at_eval": true,
+  "dropout": 0.1,
+  "num_classes": 2,
+  "label_names": [
+    "NON-HATE",
+    "HATE"
+  ],
+  "lr_encoder": 2e-05,
+  "lr_head": 5e-05,
+  "best_epoch": 4,
+  "best_val_f1": 0.7852,
+  "best_threshold": 0.43,
+  "test_accuracy": 0.9205,
+  "test_macro_f1": 0.7819,
+  "test_macro_p": 0.7859,
+  "test_macro_r": 0.7781,
+  "test_f1_hate": 0.6081,
+  "baseline_macro_f1": 0.7792,
+  "baseline_hate_f1": 0.6045,
+  "delta_macro_f1": 0.0027,
+  "delta_hate_f1": 0.0036
+}
