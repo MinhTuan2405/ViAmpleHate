@@ -79,12 +79,6 @@ if run_clicked:
                         "Probabilities": result["prob_text"],
                         "NON-HATE": result["non_hate_prob"],
                         "HATE": result["hate_prob"],
-                        "Latency (ms)": result["latency_ms"],
-                        "Device": result["device"],
-                        "Test Macro-F1": result["test_macro_f1"],
-                        "Test F1-HATE": result["test_f1_hate"],
-                        "Threshold": result["threshold"],
-                        "Note": result["note"],
                     }
                 )
             except Exception as exc:
@@ -96,12 +90,6 @@ if run_clicked:
                         "Probabilities": "",
                         "NON-HATE": None,
                         "HATE": None,
-                        "Latency (ms)": None,
-                        "Device": "",
-                        "Test Macro-F1": None,
-                        "Test F1-HATE": None,
-                        "Threshold": None,
-                        "Note": str(exc),
                     }
                 )
             progress.progress(index / len(selected_ids))
@@ -111,16 +99,6 @@ if run_clicked:
 
         st.subheader("Kết quả cuối cùng của từng model")
         st.dataframe(df, use_container_width=True, hide_index=True)
-
-        st.subheader("Tóm tắt xác suất")
-        for row in rows:
-            if row["Final Prediction"] == "ERROR":
-                st.error(f"{row['Dataset']} - {row['Model']}: {row['Note']}")
-            else:
-                st.write(
-                    f"**{row['Dataset']} - {row['Model']}** -> "
-                    f"`{row['Final Prediction']}` | {row['Probabilities']}"
-                )
 
         st.caption("Lần chạy đầu có thể lâu vì phải load checkpoint và tải/cache PhoBERT từ HuggingFace nếu máy chưa có sẵn.")
 else:
