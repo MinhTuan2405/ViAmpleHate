@@ -1,6 +1,6 @@
 # ViAmpleHate Demo App
 
-Streamlit app chạy cùng một input qua các baseline models trong `notebooks/models/baselines` và ViHSD proposed ViAmpleHate++ PhoBERT trong `notebooks/models/proposed`.
+Streamlit app chạy cùng một input qua các baseline models trong `notebooks/models/baselines` và ViHSD/VOZ-HSD proposed ViAmpleHate++ PhoBERT trong `notebooks/models/proposed`.
 
 ## Chạy local
 

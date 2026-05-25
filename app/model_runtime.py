@@ -212,6 +212,10 @@ def preprocess(text: str) -> str:
         return ""
     if word_tokenize is None:
         return text
+    try:
+        return word_tokenize(text, format="text")
+    except Exception:
+        return text
 
 
 def normalize_text_proposed(text: str) -> str:
@@ -235,10 +239,6 @@ def segment_text(text: str) -> str:
 
 def preprocess_proposed(text: str) -> str:
     return segment_text(normalize_text_proposed(text))
-    try:
-        return word_tokenize(text, format="text")
-    except Exception:
-        return text
 
 
 def tokenize(text: str) -> list[str]:
@@ -694,6 +694,7 @@ def make_specs() -> list[ModelSpec]:
     vihsd_ample = BASELINES_DIR / "ViHSD - Baseline AmpleHate_PhoBERT"
     voz_ample = BASELINES_DIR / "VOZ-HSD - Baseline AmpleHate_PhoBERT"
     vihsd_proposed = PROPOSED_DIR / "ViHSD - Proposed ViAmpleHate_PhoBERT"
+    voz_proposed = PROPOSED_DIR / "VOZ-HSD - Proposed ViAmpleHate_PhoBERT"
 
     return [
         ModelSpec(
@@ -794,6 +795,15 @@ def make_specs() -> list[ModelSpec]:
             base_dir=voz_ample,
             checkpoint_path=voz_ample / "output" / "best_amplehate_phobert_vozhsd.pt",
             config_path=voz_ample / "output" / "models" / "amplehate_vozhsd_config.json",
+        ),
+        ModelSpec(
+            id="voz_viamplehate_proposed",
+            dataset="VOZ-HSD",
+            model="ViAmpleHate++ + PhoBERT",
+            kind="viamplehate_proposed",
+            base_dir=voz_proposed,
+            checkpoint_path=voz_proposed / "output" / "best_viamplehate_phobert_vozhsd.pt",
+            config_path=voz_proposed / "output" / "models" / "viamplehate_vozhsd_config.json",
         ),
     ]
 

@@ -24,7 +24,7 @@ def run_model(spec_id: str, text: str, device_mode: str) -> dict:
 
 
 st.title("ViAmpleHate Demo")
-st.caption("Nhập một câu văn bản và chạy qua các baseline models cùng ViHSD proposed ViAmpleHate++ PhoBERT.")
+st.caption("Nhập một câu văn bản và chạy qua các baseline models cùng ViHSD/VOZ-HSD proposed ViAmpleHate++ PhoBERT.")
 
 with st.sidebar:
     st.header("Cấu hình")
