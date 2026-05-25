@@ -155,4 +155,22 @@ Classification Report — Test Set
     accuracy                         0.9643     10000
    macro avg     0.8159    0.8211    0.8185     10000
 weighted avg     0.9646    0.9643    0.9644     10000
+
+PhoBert ViAmpleHate 
+              precision    recall  f1-score   support
+
+    NON-HATE     0.9638    0.9719    0.9678      4487
+        HATE     0.7347    0.6803    0.7065       513
+
+    accuracy                         0.9420      5000
+   macro avg     0.8492    0.8261    0.8371      5000
+weighted avg     0.9403    0.9420    0.9410      5000
+
+--------------------------
+Summary
+Accuracy        : 0.9420   (baseline: 0.9643, Delta=-0.0223)
+Macro Precision : 0.8492   (baseline: 0.8159, Delta=+0.0333)
+Macro Recall    : 0.8261   (baseline: 0.8211, Delta=+0.0050)
+Macro F1        : 0.8371   (baseline: 0.8185, Delta=+0.0186)
+F1 (HATE)       : 0.7065   (baseline: 0.6557, Delta=+0.0508)
 ```
