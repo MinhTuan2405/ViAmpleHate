@@ -1,0 +1,315 @@
+% =====================================================================
+% ViAmpleHate — ACL paper (VERSION v1: built from markdown/v1/report_en.md, blueprint style)
+% This version keeps the blueprint's planning/figure notes as LaTeX comments (%) and
+% renders contribution / related-work / error-analysis content as itemized lists,
+% mirroring the structure of report_en.md. For a flowing-prose version, see ../v2/.
+% Drop into the Overleaf ACL Conference template, replacing acl_latex.tex.
+% Requires: acl.sty, acl_natbib.bst (template) + custom.bib (this folder). Compile with pdfLaTeX.
+% =====================================================================
+\documentclass[11pt]{article}
+
+\usepackage[review]{acl}   % "final" for camera-ready, "preprint" for non-anonymous
+
+\usepackage{times}
+\usepackage{latexsym}
+\usepackage[T1]{fontenc}
+% \usepackage[T5]{fontenc} % Uncomment for full Vietnamese coverage (and drop T1)
+\usepackage[utf8]{inputenc}
+\usepackage{microtype}
+\usepackage{inconsolata}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+
+\title{ViAmpleHate: A Proposed AmpleHate- and PhoBERT-based Approach\\ for Vietnamese Hate Speech Detection}
+
+\author{First Author \\
+  Affiliation / Address line 1 \\
+  \texttt{email@domain} \\\And
+  Second Author \\
+  Affiliation / Address line 1 \\
+  \texttt{email@domain} \\}
+
+\begin{document}
+\maketitle
+
+% Abstract ~150-200 words.
+\begin{abstract}
+Hate speech detection on Vietnamese social media is challenging because hateful intent is often expressed through informal group references, slang, and implicit cues rather than explicit named entities. Target-aware models such as AmpleHate improve detection by attending to the relationship between a sentence and its hate target, but the original pipeline relies on English named-entity recognition (NER) and English-centric target categories, which transfer poorly to Vietnamese. We propose \textbf{ViAmpleHate}, a Vietnamese adaptation of AmpleHate built on PhoBERT. ViAmpleHate replaces English NER with Vietnamese NER, adds Vietnamese target-cue and attack-cue banks, models three relation channels (explicit target, implicit context, attack) through a relation-bank attention, corrects a batch-level attention contamination bug, and injects relation evidence through an instance-adaptive gate instead of a fixed scalar. Training combines weighted cross-entropy with a contrastive objective. On ViHSD and VOZ-HSD (binary NON-HATE/HATE setting), ViAmpleHate improves macro-F1 and the minority HATE-class F1 over a faithful AmpleHate baseline and over TF-IDF, BiLSTM, and PhoBERT-CNN baselines, confirming that target-aware modeling must be linguistically adapted to Vietnamese.
+\end{abstract}
+
+\section{Introduction}
+% ~1 page. Develop the points below into prose for camera-ready.
+
+Vietnamese social media is growing fast, and so is hateful content that harms individuals and communities, motivating large-scale automatic moderation. Vietnamese hate speech detection faces three specific challenges: (i) noisy text (teencode, abbreviations, repeated characters, emojis, misspellings); (ii) targets that are usually expressed through pronouns, group nouns, or informal forms of address rather than named entities; and (iii) severe class imbalance, with HATE as the minority class.
+
+The target-aware approach of AmpleHate \citep{amplehate} shows that modeling the relationship between a sentence and its intended target helps detect even implicit hate. However, the original AmpleHate uses English NER, which on Vietnamese almost never finds valid targets---only 21 of 24{,}048 training samples ($\approx$0.09\%) have a target from English NER---so the model degenerates into a plain PhoBERT classifier relying on \texttt{[CLS]}.
+
+We propose ViAmpleHate to address these weaknesses. Our contributions are:
+\begin{itemize}
+  \item \textbf{ViAmpleHate}, a Vietnamese adaptation of AmpleHate on PhoBERT, replacing English NER with Vietnamese NER + a target-cue bank, raising target coverage from $\approx$0.09\% to $\approx$18.8--20.0\%.
+  \item \textbf{Signal-channel separation}: modeling target cues (who is discussed) and attack cues (whether they are attacked) through a three-channel relation-bank attention.
+  \item \textbf{A batch-attention fix} (from batch-level \texttt{matmul} that mixes samples to per-sample \texttt{bmm} + masking) and an \textbf{instance-adaptive gate} replacing fixed-scalar injection.
+  \item \textbf{A training objective} combining weighted cross-entropy and contrastive loss for class separation under imbalance.
+  \item \textbf{Evaluation} on ViHSD and VOZ-HSD against five baselines, with improvements in macro-F1 and HATE-F1.
+\end{itemize}
+Target-awareness is useful, but only when adapted to Vietnamese linguistic characteristics.
+
+\section{Related Work}
+
+\subsection{AmpleHate: Amplifying the Attention for Versatile Implicit Hate Detection}
+% ~0.4 page.
+AmpleHate \citep{amplehate} detects implicit hate by amplifying attention between the \texttt{[CLS]} sentence representation and potential targets extracted by NER. For a target token, it computes a HeadAttention vector $r = \mathrm{softmax}(QK^\top/\sqrt d)\,V$ and injects it as $z = h_0 + e\cdot r$ with a fixed coefficient $e$. When ported to Vietnamese it has three limitations: dependence on English-style NER and target categories, a fixed injection strength for all samples, and a single relation channel (target) with no attack modeling. Our work inherits AmpleHate's target-aware idea but redesigns it for Vietnamese.
+
+\subsection{ViTHSD: Exploiting Hatred by Targets}
+% ~0.35 page.
+ViTHSD \citep{vithsd} is a target-grounded approach that labels the degree of hatred per target, reinforcing that the target is a core signal of Vietnamese hate speech and supporting our target-aware motivation. Unlike ViTHSD, ViAmpleHate does not require span-level target labels; it uses cue banks + NER to locate target and attack positions without span supervision. The Vietnamese baselines we compare against are PhoBERT \citep{phobert}, PhoBERT-CNN, BiLSTM + fastText \citep{fasttext}, and TF-IDF.
+
+\section{Datasets}
+
+\subsection{ViHSD}
+ViHSD \citep{vihsd} contains social-media comments with three original labels (CLEAN, OFFENSIVE, HATE), pre-split into train/dev/test. After merging to binary (Section~\ref{sec:reshape}), the distribution is in Table~\ref{tab:data}.
+
+\subsection{VOZ-HSD}
+VOZ-HSD \citep{vozhsd} contains comments from the VOZ forum, pre-split into train/dev/test; its class distribution after relabeling is in Table~\ref{tab:data}.
+
+\subsection{Reshape dataset (binary reformulation)}
+\label{sec:reshape}
+The only operation on the data is relabeling; we do not alter or subsample the number of examples. We merge CLEAN and OFFENSIVE into NON-HATE and keep HATE as the positive class. This focuses the task on group-directed hate rather than general toxicity, and yields a consistent labeling setup across datasets. Common preprocessing: lowercasing, removing URLs/non-linguistic symbols, collapsing repeated characters, normalizing teencode, mapping emojis to coarse pragmatic tags, and word segmentation before PhoBERT.
+
+\begin{table}[t]
+  \centering
+  \small
+  \begin{tabular}{llrrr}
+    \toprule
+    \textbf{Dataset} & \textbf{Split} & \textbf{NON-HATE} & \textbf{HATE} & \textbf{Total} \\
+    \midrule
+    ViHSD & Train & 21{,}492 & 2{,}556 & 24{,}048 \\
+    ViHSD & Dev   & 2{,}402  & 270     & 2{,}672  \\
+    ViHSD & Test  & 5{,}992  & 688     & 6{,}680  \\
+    VOZ   & Train & 26{,}993 & 3{,}007 & 30{,}000 \\
+    VOZ   & Dev   & 4{,}520  & 480     & 5{,}000  \\
+    VOZ   & Test  & 4{,}487  & 513     & 5{,}000  \\
+    \bottomrule
+  \end{tabular}
+  \caption{Dataset statistics after binary relabeling.}
+  \label{tab:data}
+\end{table}
+
+% FIGURE 1 — Class distribution bar chart. DRAW NEW (matplotlib) from Table 1.
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{example-image-golden}
+  \caption{Class distribution of ViHSD and VOZ-HSD. \textbf{[DRAW NEW]} emphasize the $\approx$10\% HATE imbalance.}
+  \label{fig:dist}
+\end{figure}
+
+\section{Methodology}
+% ~2 pages, core section. Task: binary classification of comment x into {NON-HATE, HATE}.
+% Five adaptations: Vietnamese target extraction; separating target/attack cues;
+% relation-bank attention; corrected batched attention; adaptive-gate injection.
+
+% FIGURE 2 — Overall architecture. MOST IMPORTANT, DRAW NEW (draw.io/PowerPoint).
+% comment -> normalize -> word seg -> PhoBERT -> [CLS] h0 + states H
+%   -> Vietnamese NER + target-cue bank -> T_x ; attack-cue bank -> A_x
+%   -> relation-bank attention r_exp/r_imp/r_atk -> fuse W_r
+%   -> adaptive gate g=sigmoid(W_g[h0;r]) -> z=h0+g*r -> Linear -> {NON-HATE,HATE}
+%   annotate loss L = L_CE + alpha L_CL
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=0.9\linewidth]{example-image}
+  \caption{Overall architecture of ViAmpleHate. \textbf{[DRAW NEW]}}
+  \label{fig:arch}
+\end{figure*}
+
+\subsection{Text Preprocessing}
+Noise normalization (lowercase; remove URLs/non-linguistic symbols; collapse repeated characters; normalize teencode; map emojis to coarse pragmatic tags) is followed by word segmentation (required by PhoBERT), tokenization with the PhoBERT tokenizer, and truncation/padding to $\mathrm{max\_len}=256$.
+
+\subsection{Multi-Signal Target and Attack Extraction}
+The target signal is Vietnamese NER (person/org/loc/GPE/group) unioned with a target-cue bank (pronouns, group nouns, informal address); a cue only marks a possible target position. The attack signal is an attack-cue bank (offensive predicates, insults, threats, negative evaluations). Target and attack cues are kept separate---target = who is discussed; attack = whether hostile evaluation is directed at them. Cues are normalized, segmented, tokenized, and matched by full token-sequence matching. Empty sets fall back to \texttt{[CLS]}:
+\begin{align}
+  T_x &= M_{\mathrm{NER}}(x)\,\cup\,M_{\mathrm{target}}(x), \quad A_x = M_{\mathrm{attack}}(x) \\
+  T_x &\leftarrow \{0\}\ \text{if } T_x=\varnothing, \;\; A_x \leftarrow \{0\}\ \text{if } A_x=\varnothing \nonumber
+\end{align}
+
+\subsection{PhoBERT Encoder}
+\begin{equation}
+  H = \mathrm{PhoBERT}(x) = [\,h_0, h_1, \dots, h_n\,], \quad h_i \in \mathbb{R}^{d},
+\end{equation}
+with $d=768$; $h_0$ is the \texttt{[CLS]} (global context) and target/attack positions give localized evidence.
+
+\subsection{Relation-Bank Attention}
+\begin{align}
+  r_{\mathrm{exp}} &= \mathrm{HeadAttn}(h_0, H[T_x]), \nonumber\\
+  r_{\mathrm{imp}} &= \mathrm{HeadAttn}(h_0, h_0), \\
+  r_{\mathrm{atk}} &= \mathrm{HeadAttn}(h_0, H[A_x]), \nonumber
+\end{align}
+with each module over $E \in \mathbb{R}^{m\times d}$ computing $\alpha = \mathrm{softmax}\!\big((W_q h_0)(W_k E)^\top/\sqrt d\big)$ and $r = \alpha\,(W_v E)$. Fusion: $r = W_r[\,r_{\mathrm{exp}};r_{\mathrm{imp}};r_{\mathrm{atk}}\,] + b_r$.
+
+\subsection{Corrected Batched Attention}
+Batch-level $QK^\top$ ($Q,K\in\mathbb{R}^{B\times d}\Rightarrow QK^\top\in\mathbb{R}^{B\times B}$) mixes samples. We use batched attention ($Q\in\mathbb{R}^{B\times 1\times d}$, $K\in\mathbb{R}^{B\times m\times d}$):
+\begin{equation}
+  \mathrm{scores} = \mathrm{bmm}(Q,K^\top)/\sqrt d \in\mathbb{R}^{B\times1\times m},
+\end{equation}
+with padding masked ($\mathrm{scores}_j=-\infty$ if $\mathrm{mask}_j=0$) before softmax.
+
+\subsection{Instance-Adaptive Relation Gate}
+\begin{equation}
+  g = \sigma\big(W_g[\,h_0;r\,] + b_g\big),\qquad z = h_0 + g\cdot r.
+\end{equation}
+Strong cues raise $g$; weak/absent cues let the model rely on \texttt{[CLS]}. $z$ passes through dropout + linear to logits for NON-HATE/HATE.
+
+\subsection{Training Objective}
+$L = L_{\mathrm{CE}} + \alpha L_{\mathrm{CL}}$ ($\alpha=0.1$), with weighted CE $L_{\mathrm{CE}}=-\sum_c w_c y_c\log\hat y_c$ + label smoothing, and a contrastive term on $z$ ($s_{ij}=\cos(z_i,z_j)$):
+\begin{equation}
+\begin{split}
+  L_{\mathrm{CL}} = \frac{1}{N}\sum_{i\neq j}\big[&\mathbb{1}[y_i{=}y_j](1-s_{ij}) \\[-2pt]
+   + &\,\mathbb{1}[y_i{\neq}y_j]\max(0, s_{ij}-m)\big].
+\end{split}
+\end{equation}
+Threshold $t^{*} = \arg\max_t \mathrm{MacroF1}(y, \mathbb{1}[p_{\mathrm{HATE}}\ge t])$ is chosen on validation.
+
+\section{Experiments}
+
+\subsection{Baselines}
+Five baselines (binary): TF-IDF + LR/SVM; BiLSTM + fastText; PhoBERT-CNN; and AmpleHate-PhoBERT (English NER, one HeadAttention, fixed injection $z=h_0+e\,r_{\mathrm{base}}$, $e=1.0$)---the direct competitor with the same encoder. Table~\ref{tab:arch} lists the differences.
+
+\begin{table*}[t]
+  \centering
+  \small
+  \begin{tabular}{p{0.20\linewidth} p{0.36\linewidth} p{0.36\linewidth}}
+    \toprule
+    \textbf{Component} & \textbf{Baseline AmpleHate-PhoBERT} & \textbf{ViAmpleHate-PhoBERT (proposed)} \\
+    \midrule
+    Encoder & PhoBERT-base & PhoBERT-base \\
+    Target extraction & English NER & Vietnamese NER + target-cue bank \\
+    Target coverage & $\approx$0.09\% of train (21/24{,}048) & $\approx$18.8--20.0\% via Vietnamese cues \\
+    Attack signal & Not modeled & Separate attack-cue bank \\
+    Attention & One HeadAttention & Three channels: target / implicit / attack \\
+    Attention computation & Batch-level \texttt{matmul} (mixes samples) & Per-sample \texttt{bmm} + masking \\
+    Fusion & Fixed injection $h_0+e\,r$ ($e{=}1.0$) & Relation bank + adaptive gate $h_0+g\,r$ \\
+    Loss & Weighted CE & Weighted CE + contrastive ($\alpha{=}0.1$) \\
+    Max length & 128 & 256 \\
+    Batch & 16 & 16 $\times$ grad-accum 2 (eff.\ 32) \\
+    NER at evaluation & Off ($\Rightarrow$ \texttt{[CLS]} fallback) & On, consistent across splits \\
+    \bottomrule
+  \end{tabular}
+  \caption{Architecture and configuration comparison.}
+  \label{tab:arch}
+\end{table*}
+
+\subsection{Implementation Details}
+Encoder \texttt{vinai/phobert-base} (768-d); Vietnamese NER \texttt{NlpHUST/ner-vietnamese-electra-base}; max length 256; LR $2\mathrm{e}{-}5$ (encoder) / $5\mathrm{e}{-}5$ (head); dropout $0.1$; effective batch 32 (16 $\times$ grad-accum 2); up to 8 epochs; checkpoint and threshold selected by validation macro-F1; $\alpha=0.1$.
+
+\subsection{Evaluation Metrics}
+Macro-F1 and HATE-class F1 are primary; accuracy is reference-only (inflated by imbalance). Each change targets a concrete limitation: Vietnamese NER+cues $\leftrightarrow$ low coverage; attack cues $\leftrightarrow$ no hostility modeling; relation-bank $\leftrightarrow$ separating target/context/attack; batched attention $\leftrightarrow$ cross-sample leakage; adaptive gate $\leftrightarrow$ fixed injection; contrastive $\leftrightarrow$ class separation.
+
+\section{Result Analysis / Error Analysis}
+
+\subsection{Experimental Results}
+
+\begin{table}[t]
+  \centering
+  \small
+  \begin{tabular}{lrrr}
+    \toprule
+    \textbf{Model} & \textbf{Acc.} & \textbf{Mac-F1} & \textbf{HATE-F1} \\
+    \midrule
+    TF-IDF + LR          & 0.8910 & 0.7393 & 0.5404 \\
+    TF-IDF + SVM         & 0.9126 & 0.7131 & 0.4739 \\
+    BiLSTM + fastText    & --     & 0.7072 & 0.5060 \\
+    PhoBERT-CNN          & --     & 0.7571 & 0.5745 \\
+    AmpleHate (baseline) & 0.9175 & 0.7792 & 0.6045 \\
+    \textbf{ViAmpleHate} & \textbf{0.9205} & \textbf{0.7819} & \textbf{0.6081} \\
+    \textit{$\Delta$ base} & \textit{+.0030} & \textit{+.0027} & \textit{+.0036} \\
+    \bottomrule
+  \end{tabular}
+  \caption{Results on ViHSD (test). Best per column in bold.}
+  \label{tab:vihsd}
+\end{table}
+
+\begin{table}[t]
+  \centering
+  \small
+  \begin{tabular}{lrrr}
+    \toprule
+    \textbf{Model} & \textbf{Acc.} & \textbf{Mac-F1} & \textbf{HATE-F1} \\
+    \midrule
+    TF-IDF + LR          & 0.9453 & 0.7745 & 0.5783 \\
+    TF-IDF + SVM         & 0.9641 & 0.7831 & 0.5850 \\
+    BiLSTM + fastText    & --     & 0.6712 & 0.4187 \\
+    PhoBERT-CNN          & --     & 0.8150 & 0.6500 \\
+    AmpleHate (baseline) & 0.9643 & 0.8185 & 0.6557 \\
+    \textbf{ViAmpleHate} & 0.9420 & \textbf{0.8371} & \textbf{0.7065} \\
+    \textit{$\Delta$ base} & \textit{--.0223} & \textit{+.0186} & \textit{+.0508} \\
+    \bottomrule
+  \end{tabular}
+  \caption{Results on VOZ-HSD (test). Best per column in bold.}
+  \label{tab:voz}
+\end{table}
+
+Transformer models outperform lexical and static-embedding baselines (Tables~\ref{tab:vihsd},~\ref{tab:voz}). The AmpleHate baseline is limited because English NER rarely finds Vietnamese targets, falling back to \texttt{[CLS]}. ViAmpleHate improves macro-F1 and HATE-F1 on both datasets, with a larger gain on VOZ-HSD (HATE-F1 $+0.0508$). On ViHSD, HATE precision rises ($0.5972\!\to\!0.6177$) while recall drops slightly ($0.6119\!\to\!0.5988$): more conservative but more precise. Accuracy drops on VOZ while macro/HATE-F1 rise---showing accuracy is misleading under imbalance. The benefit scales with cue coverage; when coverage is low, the model leans on \texttt{[CLS]} and the gap narrows.
+
+% FIGURE 3 — Training curves: training_curves_viamplehate.png
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{example-image-a}
+  \caption{Training/validation curves on ViHSD (best epoch 4, val macro-F1 $=0.7852$). \textbf{[USE PNG]} \texttt{training\_curves\_viamplehate.png}.}
+  \label{fig:curves}
+\end{figure}
+
+% FIGURE 4 — Confusion matrices: confusion_matrix_amplehate.png (left), confusion_matrix_viamplehate.png (right)
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=0.45\linewidth]{example-image-a}\hfill
+  \includegraphics[width=0.45\linewidth]{example-image-b}
+  \caption{Confusion matrices on ViHSD: baseline (left) vs ViAmpleHate (right). \textbf{[USE PNGs]} note the reduction in HATE false positives.}
+  \label{fig:cm}
+\end{figure*}
+
+\begin{table}[t]
+  \centering
+  \small
+  \begin{tabular}{lrrr}
+    \toprule
+    \textbf{Class} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} \\
+    \midrule
+    NON-HATE & 0.9541 & 0.9574 & -- \\
+    HATE     & 0.6177 & 0.5988 & 0.6081 \\
+    \bottomrule
+  \end{tabular}
+  \caption{Per-class results of ViAmpleHate on ViHSD (test).}
+  \label{tab:perclass}
+\end{table}
+
+\subsection{Error Analysis}
+The remaining errors group as follows:
+\begin{enumerate}
+  \item \textbf{Offensive but not hate}: profanity/personal aggression with no group target $\Rightarrow$ false positives.
+  \item \textbf{Implicit hate}: sarcasm, insinuation, stereotypes with no explicit slur/attack token $\Rightarrow$ must rely on \texttt{[CLS]}.
+  \item \textbf{Ambiguous target cue}: pronouns/group nouns appear in neutral comments too $\Rightarrow$ over-predicting HATE.
+  \item \textbf{Incomplete cue coverage}: fast-changing slang/spelling/abbreviations $\Rightarrow$ false negatives.
+  \item \textbf{Tokenization/span-alignment errors}: NER, word segmentation, and subword tokenization may misalign $\Rightarrow$ attention on wrong tokens.
+  \item \textbf{Threshold sensitivity}: validation-optimal threshold may not transfer under distribution shift.
+  \item \textbf{Class imbalance}: minority-class errors persist despite weighted loss and threshold tuning.
+\end{enumerate}
+Directions: expand cue banks via data-driven mining + manual validation; save per-instance prediction logs for FP/FN analysis; add span supervision, sarcasm detection, social context; apply probability calibration.
+
+\section{Conclusion and Future Work}
+ViAmpleHate generalizes AmpleHate for Vietnamese through five adaptations (Vietnamese target extraction, separate target/attack cues, relation-bank attention, corrected batched attention, adaptive injection), trained with CE + contrastive loss. It improves macro-F1 and HATE-F1 over the AmpleHate baseline and the TF-IDF/BiLSTM/PhoBERT-CNN baselines. Target-awareness is useful but must be adapted to Vietnamese, where targets are often informal group references. Future work: expand/auto-mine cue banks; per-instance error analysis; span supervision and sarcasm detection; extend to multi-target settings (cf.\ ViTHSD); and probability calibration for cross-domain stability.
+
+\section*{Limitations}
+The cue banks are partly hand-built and cannot cover the full, fast-changing space of Vietnamese slang and creative profanity, bounding recall on implicit or novel hate. The decision threshold is tuned on validation and may not be optimal under distribution shift. The model addresses a binary formulation and does not yet handle multi-target or graded hatred.
+
+% \section*{Acknowledgments}
+
+\bibliography{custom}
+
+\appendix
+\section{Reproducibility Notes}
+\label{sec:appendix}
+ViHSD best checkpoint: epoch 4, val macro-F1 $=0.7852$, threshold $0.43$. All PhoBERT-based models share \texttt{vinai/phobert-base}; only target/relation modeling, attention computation, fusion, and loss differ.
+
+\end{document}
