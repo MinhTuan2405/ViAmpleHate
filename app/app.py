@@ -79,9 +79,12 @@ if run_clicked:
                         "Probabilities": result["prob_text"],
                         "NON-HATE": result["non_hate_prob"],
                         "HATE": result["hate_prob"],
+                        "Error": "",
                     }
                 )
             except Exception as exc:
+                error_message = f"{type(exc).__name__}: {exc}"
+                st.error(f"{spec.display_name} lỗi: {error_message}")
                 rows.append(
                     {
                         "Dataset": spec.dataset,
@@ -90,6 +93,7 @@ if run_clicked:
                         "Probabilities": "",
                         "NON-HATE": None,
                         "HATE": None,
+                        "Error": error_message,
                     }
                 )
             progress.progress(index / len(selected_ids))

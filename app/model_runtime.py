@@ -286,6 +286,20 @@ def torch_load(path: Path) -> Any:
         return torch.load(path, map_location="cpu", weights_only=False)
 
 
+def load_transformers_model(model_name: str) -> nn.Module:
+    try:
+        return AutoModel.from_pretrained(model_name)
+    except ValueError as exc:
+        message = str(exc)
+        if "upgrade torch to at least v2.6" in message:
+            raise RuntimeError(
+                f"Cannot load {model_name} with torch {torch.__version__}. "
+                "Transformers now requires torch>=2.6 when loading PyTorch .bin weights. "
+                "Upgrade with: pip install --upgrade -r app\\requirements.txt"
+            ) from exc
+        raise
+
+
 def softmax_probs(logits: torch.Tensor) -> tuple[float, float]:
     probs = torch.softmax(logits, dim=-1).detach().cpu().numpy().reshape(-1)
     return float(probs[0]), float(probs[1])
@@ -372,7 +386,7 @@ class PhoBERTCNN(nn.Module):
         dropout: float,
     ):
         super().__init__()
-        self.bert = AutoModel.from_pretrained(model_name)
+        self.bert = load_transformers_model(model_name)
         hidden_size = self.bert.config.hidden_size
         self.kernel_sizes = tuple(kernel_sizes)
         self.convs = nn.ModuleList(
@@ -437,7 +451,7 @@ class AmpleHatePhoBERT(nn.Module):
         dropout: float,
     ):
         super().__init__()
-        self.bert = AutoModel.from_pretrained(model_name)
+        self.bert = load_transformers_model(model_name)
         self.hidden_dim = hidden_dim
         self.e = e
         self.head_attention = HeadAttention(hidden_dim, hidden_dim)
@@ -624,7 +638,7 @@ class RelationHeadAttention(nn.Module):
 class ViAmpleHatePhoBERT(nn.Module):
     def __init__(self, model_name: str, hidden_dim: int, num_classes: int, dropout: float):
         super().__init__()
-        self.bert = AutoModel.from_pretrained(model_name)
+        self.bert = load_transformers_model(model_name)
         self.hidden_dim = hidden_dim
         self.head_attn_exp = RelationHeadAttention(hidden_dim, hidden_dim)
         self.head_attn_imp = RelationHeadAttention(hidden_dim, hidden_dim)
