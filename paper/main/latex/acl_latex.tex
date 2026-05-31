@@ -144,11 +144,11 @@ Given a Vietnamese comment $x$, the model predicts $y \in \{\textsc{non-hate}, \
       >={Latex[length=2mm]},
       font=\footnotesize,
       base/.style ={rectangle, rounded corners=2pt, draw=black!45, fill=black!6,
-                    align=center, inner sep=4pt, minimum height=10mm, text width=20mm},
+                    align=center, inner sep=4pt, minimum height=10mm, text width=22mm},
       novel/.style={rectangle, rounded corners=2pt, draw=orange!80!black, line width=0.9pt,
-                    fill=orange!16, align=center, inner sep=4pt, minimum height=10mm, text width=22mm},
+                    fill=orange!16, align=center, inner sep=4pt, minimum height=10mm, text width=26mm},
       attn/.style ={rectangle, rounded corners=2pt, draw=orange!75!black, fill=orange!8,
-                    align=center, inner sep=3pt, minimum height=7mm, text width=16mm, font=\scriptsize},
+                    align=center, inner sep=3pt, minimum height=8mm, text width=27mm, font=\scriptsize},
       io/.style   ={rectangle, rounded corners=7pt, draw=blue!55, fill=blue!8,
                     align=center, inner sep=4pt, minimum height=10mm, text width=18mm},
       flow/.style ={->, draw=black!55, line width=0.7pt},
@@ -156,38 +156,38 @@ Given a Vietnamese comment $x$, the model predicts $y \in \{\textsc{non-hate}, \
     ]
     % --- main path nodes (explicit coordinates, cm) ---
     \node[io]    (inp) at (0,0)      {Vietnamese\\comment $x$};
-    \node[base]  (pre) at (2.5,0)    {Preprocessing\\{\scriptsize normalize $\cdot$ word-seg $\cdot$ tokenize}};
-    \node[base]  (enc) at (5.2,1.3)  {PhoBERT\\encoder\\{\scriptsize $d{=}768$}};
-    \node[novel] (det) at (5.2,-1.3) {Target \& attack\\detection\\{\scriptsize Vi-NER $+$ cues}};
+    \node[base]  (pre) at (2.8,0)    {Preprocessing\\{\scriptsize normalize $\cdot$ word-seg $\cdot$ tokenize}};
+    \node[base]  (enc) at (5.8,1.9)  {PhoBERT encoder\\{\scriptsize $H=[h_0,\dots,h_n]$,\ $h_0={}$[CLS]}};
+    \node[novel] (det) at (5.8,-1.9) {Multi-signal extraction\\{\scriptsize Vi-NER $+$ target cues $\to T_x$}\\{\scriptsize attack cues $\to A_x$; fallback [CLS]}};
     % --- relation-bank attention channels ---
-    \node[attn] (re) at (8.4,1.15)  {$r_{\mathrm{exp}}$\\{\scriptsize target}};
-    \node[attn] (ri) at (8.4,0.0)   {$r_{\mathrm{imp}}$\\{\scriptsize context}};
-    \node[attn] (ra) at (8.4,-1.15) {$r_{\mathrm{atk}}$\\{\scriptsize attack}};
+    \node[attn] (re) at (9.7,1.7)   {$r_{\mathrm{exp}}$ --- target\\$\mathrm{Attn}(h_0,H[T_x])$};
+    \node[attn] (ri) at (9.7,0.0)   {$r_{\mathrm{imp}}$ --- context\\$\mathrm{Attn}(h_0,h_0)$};
+    \node[attn] (ra) at (9.7,-1.7)  {$r_{\mathrm{atk}}$ --- attack\\$\mathrm{Attn}(h_0,H[A_x])$};
     % --- downstream ---
-    \node[novel] (gate) at (11.9,0)  {Adaptive gate\\{\scriptsize $z{=}h_0{+}g\,r$}};
-    \node[base]  (clf)  at (14.2,0)  {Classifier\\{\scriptsize $+$ threshold}};
-    \node[io]    (out)  at (16.4,0)  {NON-HATE\\/ HATE};
-    \node[font=\scriptsize] (loss) at (11.9,-2.1) {$L=L_{\mathrm{CE}}+\alpha\,L_{\mathrm{CL}}$};
+    \node[novel] (gate) at (13.6,0)  {Adaptive gate\\{\scriptsize $g=\sigma(W_g[h_0;r])$}\\{\scriptsize $z=h_0+g\,r$}};
+    \node[base]  (clf)  at (16.4,0)  {Classifier\\{\scriptsize dropout $\to$ linear $\to$ threshold}};
+    \node[io]    (out)  at (18.8,0)  {NON-HATE\\/ HATE};
+    \node[font=\scriptsize, align=center] (loss) at (13.6,-3.1) {$L=L_{\mathrm{CE}}+\alpha\,L_{\mathrm{CL}}$\\{\scriptsize weighted CE $+$ contrastive ($\alpha{=}0.1$)}};
     % --- relation-bank container (background) ---
     \begin{scope}[on background layer]
       \node[draw=orange!70!black, dashed, rounded corners=3pt, fill=orange!4,
-            fit=(re)(ri)(ra), inner sep=5pt,
+            fit=(re)(ri)(ra), inner sep=6pt,
             label={[font=\scriptsize, text=orange!55!black]above:Relation-bank attention}] (relbox) {};
     \end{scope}
     % --- arrows ---
     \draw[flow] (inp) -- (pre);
     \draw[flow] (pre.east) -- (enc.west);
     \draw[flow] (pre.east) -- (det.west);
-    \draw[flow] (enc.east) -- node[lbl,pos=0.65]{$h_0$} (relbox.north west);
-    \draw[flow] (det.east) -- node[lbl,pos=0.65]{$T_x,A_x$} (relbox.south west);
-    \draw[flow] (relbox.east) -- node[lbl]{$r$} (gate.west);
-    \draw[flow] (enc.north) -- (5.2,2.3) -- node[lbl]{$h_0$ (residual)} (11.9,2.3) -- (gate.north);
+    \draw[flow] (enc.east)  -- node[lbl,pos=0.6]{$h_0$ (query)} (relbox.north west);
+    \draw[flow] (det.east)  -- node[lbl,pos=0.6]{$T_x,A_x$} (relbox.south west);
+    \draw[flow] (relbox.east) -- node[lbl]{fuse $\to r$} (gate.west);
+    \draw[flow] (enc.north) -- (5.8,3.5) -- node[lbl]{$h_0$ (residual)} (13.6,3.5) -- (gate.north);
     \draw[flow] (gate) -- node[lbl]{$z$} (clf);
     \draw[flow] (clf) -- (out);
     \draw[->, draw=black!40, dashed] (gate.south) -- (loss.north);
   \end{tikzpicture}%
   }
-  \caption{Overall architecture of ViAmpleHate. A comment is normalized, word-segmented, and encoded by PhoBERT (global representation $h_0$); Vietnamese NER and the target-cue bank yield the target set $T_x$ while the attack-cue bank yields $A_x$. Three relation channels---explicit target ($r_{\mathrm{exp}}$), implicit context ($r_{\mathrm{imp}}$), and attack ($r_{\mathrm{atk}}$)---are fused into $r$ and injected into $h_0$ through an instance-adaptive gate ($z=h_0+g\,r$) before classification. The model is trained with weighted cross-entropy plus a contrastive term ($L=L_{\mathrm{CE}}+\alpha L_{\mathrm{CL}}$). Orange marks the components introduced by ViAmpleHate.}
+  \caption{Overall architecture of ViAmpleHate. The comment is normalized, word-segmented, and encoded by PhoBERT into hidden states $H=[h_0,\dots,h_n]$, with $h_0$ the [CLS] (global) representation. Vietnamese NER and a target-cue bank produce the target index set $T_x$, while an attack-cue bank produces $A_x$ (falling back to [CLS] when a set is empty). A relation-bank attention with three per-sample channels---explicit target ($r_{\mathrm{exp}}$), implicit context ($r_{\mathrm{imp}}$), and attack ($r_{\mathrm{atk}}$)---is fused into a single relation vector $r$ and injected into $h_0$ through an instance-adaptive gate ($g=\sigma(W_g[h_0;r])$, $z=h_0+g\,r$). A linear classifier with a validation-tuned threshold yields the NON-HATE/HATE decision; training minimizes $L=L_{\mathrm{CE}}+\alpha L_{\mathrm{CL}}$.}
   \label{fig:arch}
 \end{figure*}
 
