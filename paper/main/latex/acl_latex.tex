@@ -374,12 +374,13 @@ Hate speech detection is dual-use: the same models that support content moderati
 \begin{table}[h]
   \centering
   \small
-  \begin{tabular}{ll}
+  \setlength{\tabcolsep}{3pt} 
+  \begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.50\columnwidth}>{\raggedright\arraybackslash}p{0.47\columnwidth}@{}} 
     \toprule
     \textbf{Parameter} & \textbf{Value} \\
     \midrule
     Encoder & \texttt{vinai/phobert-base} (768-d) \\
-    Vietnamese NER & \texttt{NlpHUST/ner-vietnamese-electra-base} \\
+    Vietnamese NER & \texttt{NlpHUST/\allowbreak ner-vietnamese-\allowbreak electra-base} \\
     max\_len & 256 \\
     LR (encoder / head) & 2e-5 / 5e-5 \\
     Dropout & 0.1 \\
