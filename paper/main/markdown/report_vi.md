@@ -54,7 +54,7 @@ ViHSD là bộ dữ liệu hate speech tiếng Việt gồm bình luận mạng 
 
 ### 3.2 VOZ-HSD
 
-VOZ-HSD gồm bình luận từ diễn đàn VOZ, nguồn gốc từ `tarudesu/VOZ-HSD` trên HuggingFace. Cũng như ViHSD, dữ liệu được chia train/validation/test, và phân bố sau gán nhãn ở Bảng 1.
+VOZ-HSD, được phát hành kèm bài báo ViHateT5, gồm bình luận từ diễn đàn VOZ, nguồn gốc từ `tarudesu/VOZ-HSD` trên HuggingFace. Cũng như ViHSD, dữ liệu được chia train/validation/test, và phân bố sau gán nhãn ở Bảng 1.
 
 ### 3.3 Gán lại nhãn nhị phân và tiền xử lý
 
@@ -300,7 +300,16 @@ Phát hiện thù ghét là lưỡng dụng: cùng một mô hình hỗ trợ ki
 
 ## Tài liệu tham khảo
 
-> *(Kiểm tra và hoàn thiện đầy đủ thông tin thư mục trước khi nộp.)* AmpleHate; ViTHSD; ViHSD (Luu và cộng sự, 2021); VOZ-HSD (`tarudesu/VOZ-HSD`); PhoBERT (Nguyen & Nguyen, 2020); BERT (Devlin và cộng sự, 2019); fastText (Bojanowski và cộng sự, 2017); Supervised Contrastive Learning (Khosla và cộng sự, 2020); NER tiếng Việt (`NlpHUST/ner-vietnamese-electra-base`).
+- **AmpleHate** — Lee, Y., Hahn, J., Ahn, H., Han, Y.-S. (2025). "AmpleHate: Amplifying the Attention for Versatile Implicit Hate Detection." *Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing* (Suzhou, Trung Quốc), tr. 28862–28874. ACL. DOI: 10.18653/v1/2025.emnlp-main.1469.
+- **ViTHSD** — Vo, C. N., Huynh, K. B., Luu, S. T., Do, T.-H. (2025). "ViTHSD: Exploiting Hatred by Targets for Hate Speech Detection on Vietnamese Social Media Texts." *Journal of Computational Social Science* 8(2):30. Springer. DOI: 10.1007/s42001-024-00348-6.
+- **ViHSD** — Luu, S. T., Nguyen, K. V., Nguyen, N. L.-T. (2021). "A Large-Scale Dataset for Hate Speech Detection on Vietnamese Social Media Texts." *Advances and Trends in Artificial Intelligence. Artificial Intelligence Practices* (LNCS 12798), tr. 415–426. Springer, Cham. DOI: 10.1007/978-3-030-79457-6_35.
+- **VOZ-HSD** — Thanh Nguyen, L. (2024). "VOZ-HSD: A Hate Speech Detection Dataset from the VOZ Forum." Bộ dữ liệu Hugging Face, `tarudesu/VOZ-HSD`. Phát hành kèm ViHateT5.
+- **ViHateT5** — Thanh Nguyen, L. (2024). "ViHateT5: Enhancing Hate Speech Detection in Vietnamese With a Unified Text-to-Text Transformer Model." *Findings of the ACL 2024* (Bangkok, Thái Lan), tr. 5948–5961. ACL. DOI: 10.18653/v1/2024.findings-acl.355.
+- **PhoBERT** — Nguyen, D. Q., Nguyen, A. T. (2020). "PhoBERT: Pre-trained language models for Vietnamese." *Findings of EMNLP 2020*, tr. 1037–1042.
+- **BERT** — Devlin và cộng sự (2019). *NAACL*.
+- **fastText** — Bojanowski và cộng sự (2017). *TACL*.
+- **Supervised Contrastive Learning** — Khosla và cộng sự (2020). *NeurIPS*.
+- **NER tiếng Việt** — `NlpHUST/ner-vietnamese-electra-base`.
 
 ---
 

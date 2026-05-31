@@ -58,7 +58,7 @@ ViHSD is a Vietnamese hate speech detection dataset of social-media comments ann
 
 ### 3.2 VOZ-HSD
 
-VOZ-HSD consists of comments collected from the VOZ forum, originating from the `tarudesu/VOZ-HSD` set on HuggingFace. As with ViHSD, the data is split into training, validation, and test partitions, and its post-relabeling class distribution is reported in Table 1. As a third-party resource, its detailed annotation procedure and licensing are documented by the dataset authors.
+VOZ-HSD, released with the ViHateT5 paper, consists of comments collected from the VOZ forum, originating from the `tarudesu/VOZ-HSD` set on HuggingFace. As with ViHSD, the data is split into training, validation, and test partitions, and its post-relabeling class distribution is reported in Table 1. As a third-party resource, its detailed annotation procedure and licensing are documented by the dataset authors.
 
 ### 3.3 Binary relabeling and preprocessing
 
@@ -317,12 +317,11 @@ Hate speech detection is dual-use: the same models that support content moderati
 
 ## References
 
-> *(Verify and complete all bibliographic details before submission; use `\bibliography{}` with `acl_natbib` or import a `.bib` file.)*
-
-- **AmpleHate** — "AmpleHate: Amplifying the Attention for Versatile Implicit Hate Detection" *(fill in authors/venue/year)*.
-- **ViTHSD** — "ViTHSD: Exploiting Hatred by Targets for Hate Speech Detection on Vietnamese Social Media Texts" *(fill in details)*.
-- **ViHSD** — Luu, S. T., Nguyen, K. V., Nguyen, N. L.-T. (2021). "A Large-scale Dataset for Hate Speech Detection on Vietnamese Social Media Texts." *(verify venue)*.
-- **VOZ-HSD** — the `tarudesu/VOZ-HSD` dataset (HuggingFace) *(fill in citation/URL)*.
+- **AmpleHate** — Lee, Y., Hahn, J., Ahn, H., Han, Y.-S. (2025). "AmpleHate: Amplifying the Attention for Versatile Implicit Hate Detection." *Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing* (Suzhou, China), pp. 28862–28874. ACL. DOI: 10.18653/v1/2025.emnlp-main.1469.
+- **ViTHSD** — Vo, C. N., Huynh, K. B., Luu, S. T., Do, T.-H. (2025). "ViTHSD: Exploiting Hatred by Targets for Hate Speech Detection on Vietnamese Social Media Texts." *Journal of Computational Social Science* 8(2):30. Springer. DOI: 10.1007/s42001-024-00348-6.
+- **ViHSD** — Luu, S. T., Nguyen, K. V., Nguyen, N. L.-T. (2021). "A Large-Scale Dataset for Hate Speech Detection on Vietnamese Social Media Texts." *Advances and Trends in Artificial Intelligence. Artificial Intelligence Practices* (LNCS 12798), pp. 415–426. Springer, Cham. DOI: 10.1007/978-3-030-79457-6_35.
+- **VOZ-HSD** — Thanh Nguyen, L. (2024). "VOZ-HSD: A Hate Speech Detection Dataset from the VOZ Forum." Hugging Face dataset, `tarudesu/VOZ-HSD`. Released with ViHateT5.
+- **ViHateT5** — Thanh Nguyen, L. (2024). "ViHateT5: Enhancing Hate Speech Detection in Vietnamese With a Unified Text-to-Text Transformer Model." *Findings of the ACL 2024* (Bangkok, Thailand), pp. 5948–5961. ACL. DOI: 10.18653/v1/2024.findings-acl.355.
 - **PhoBERT** — Nguyen, D. Q., Nguyen, A. T. (2020). "PhoBERT: Pre-trained language models for Vietnamese." *Findings of EMNLP 2020*.
 - **BERT** — Devlin et al. (2019). *NAACL*.
 - **fastText** — Bojanowski et al. (2017). *TACL*.
