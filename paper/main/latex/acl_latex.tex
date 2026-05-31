@@ -27,6 +27,7 @@
 \usepackage{amssymb}
 \usepackage{booktabs}
 \usepackage{array}
+\usepackage{float}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning,fit,backgrounds,calc}
 
@@ -121,8 +122,8 @@ The only modification we make is \emph{relabeling}; we do not alter or subsample
 % FIGURE 1 — Class distribution. DRAW NEW (matplotlib) from Table 1.
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\columnwidth]{example-image-golden}
-  \caption{Class distribution of ViHSD and VOZ-HSD after binary relabeling. \textbf{[DRAW NEW]}}
+  \includegraphics[width=\columnwidth]{image/figure1.png}
+  \caption{Class distribution of ViHSD and VOZ-HSD after binary relabeling.}
   \label{fig:dist}
 \end{figure}
 
@@ -346,8 +347,8 @@ A likely contributor to these gains is target coverage, which we define as the f
 % FIGURE 3 — Training curves: training_curves_viamplehate.png
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\columnwidth]{example-image-a}
-  \caption{Training/validation curves of ViAmpleHate on ViHSD (best epoch 4, val macro-F1 $=0.7852$). \textbf{[USE PNG]} \texttt{training\_curves\_viamplehate.png}.}
+  \includegraphics[width=\columnwidth]{image/figure3.png}
+  \caption{Training/validation curves of ViAmpleHate on ViHSD (best epoch 4, val macro-F1 $=0.7852$). \texttt{training\_curves\_viamplehate.png}.}
   \label{fig:curves}
 \end{figure}
 
@@ -374,9 +375,9 @@ To make the error modes concrete, Table~\ref{tab:qual} shows illustrative commen
 % FIGURE 5 — Confusion matrices ViHSD: baseline vs proposed.
 \begin{figure*}[t]
   \centering
-  \includegraphics[width=0.45\linewidth]{example-image-a}\hfill
-  \includegraphics[width=0.45\linewidth]{example-image-b}
-  \caption{Confusion matrices on ViHSD: baseline AmpleHate (left) vs ViAmpleHate (right). \textbf{[USE PNGs]} \texttt{confusion\_matrix\_amplehate.png} and \texttt{confusion\_matrix\_viamplehate.png}; note the reduction in HATE false positives.}
+  \includegraphics[width=0.45\linewidth]{image/figure4a.png}\hfill
+  \includegraphics[width=0.45\linewidth]{image/figure4b.png}
+  \caption{Confusion matrices on ViHSD: baseline AmpleHate (left) vs ViAmpleHate (right). \texttt{confusion\_matrix\_amplehate.png} and \texttt{confusion\_matrix\_viamplehate.png}; note the reduction in HATE false positives.}
   \label{fig:cm}
 \end{figure*}
 
@@ -420,7 +421,7 @@ Hate speech detection is dual-use: the same models that support content moderati
 
 \section{Hyperparameters}
 \label{sec:hparams}
-\begin{table}[h]
+\begin{table}[H]
   \centering
   \small
   \setlength{\tabcolsep}{3pt} 
