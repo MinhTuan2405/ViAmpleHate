@@ -1,5 +1,9 @@
 # ViAmpleHate: A Proposed AmpleHate- and PhoBERT-based Approach for Vietnamese Hate Speech Detection (v_review — revised)
 
+Tran Nguyen Duc Trung, Nguyen Ha Minh Tuan, Nguyen Gia Cat Long, Tran Phan Thanh Tung, Mo Van Tung, Huynh Van Tin
+*University of Information Technology, VNU-HCM, Ho Chi Minh City, Vietnam*
+`{23521687, 23521718, 23520881, 23521747, 23521741}@gm.uit.edu.vn`
+
 > **Revised copy of v3 (revision rounds 1–2)** per `review_report.md`. Round 2 filled real numbers from the notebooks (hyperparameters, baseline accuracies, cue-bank sizes, target/attack coverage, VOZ per-class) and removed the ablation section per author instruction; the differing baseline/proposed configuration is now presented as intentional design rather than a confound to fix. Remaining open items (single-run only / no significance test; no published-SOTA comparison) are stated in the Limitations. **No numeric results were fabricated.** See `latex/v_review/REVISION_NOTES.md`. Figure-insertion notes use **📌 [INSERT FIGURE]**.
 
 ## Abstract

@@ -8,11 +8,12 @@
 % v3 is left untouched. See REVISION_NOTES.md.
 % Drop into the Overleaf ACL Conference template, replacing acl_latex.tex.
 % Requires: acl.sty, acl_natbib.bst (template) + custom.bib (this folder). pdfLaTeX.
-% If Vietnamese diacritics fail, use lualatex/xelatex or the T5 fontenc line.
+% Compiles with pdfLaTeX (author names are ASCII; cue examples are ASCII-safe).
+% For Vietnamese text with diacritics, use XeLaTeX/LuaLaTeX or the T5 fontenc line below.
 % =====================================================================
 \documentclass[11pt]{article}
 
-\usepackage[review]{acl}  % "final" for camera-ready; "preprint" for non-anonymous
+\usepackage[final]{acl}  % shows authors (use "review" for anonymized submission)
 
 \usepackage{times}
 \usepackage{latexsym}
@@ -29,12 +30,18 @@
 
 \title{ViAmpleHate: A Proposed AmpleHate- and PhoBERT-based Approach\\ for Vietnamese Hate Speech Detection}
 
-\author{First Author \\
-  Affiliation / Address line 1 \\
-  \texttt{email@domain} \\\And
-  Second Author \\
-  Affiliation / Address line 1 \\
-  \texttt{email@domain} \\}
+\author{
+  \textbf{Tran Nguyen Duc Trung} \quad
+  \textbf{Nguyen Ha Minh Tuan} \quad
+  \textbf{Nguyen Gia Cat Long} \\
+  \textbf{Tran Phan Thanh Tung} \quad
+  \textbf{Mo Van Tung} \\[4pt]
+  University of Information Technology, VNU-HCM, Ho Chi Minh City, Vietnam \\
+  \texttt{\{23521687, 23521718, 23520881, 23521747, 23521741\}@gm.uit.edu.vn}
+  % Supervisor: Huynh Van Tin (last author) -- TODO: add faculty email (e.g. ...@uit.edu.vn)
+}
+
+\setlength\titlebox{6cm}
 
 \begin{document}
 \maketitle
