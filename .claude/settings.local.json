@@ -7,7 +7,10 @@
       "Bash(Out-Null)",
       "Bash(Write-Output \"done\")",
       "Skill(superpowers:brainstorming)",
-      "Bash(python -c ' *)"
+      "Bash(python -c ' *)",
+      "Bash(command -v pdflatex)",
+      "Bash(command -v lualatex)",
+      "Bash(command -v xelatex)"
     ]
   }
 }

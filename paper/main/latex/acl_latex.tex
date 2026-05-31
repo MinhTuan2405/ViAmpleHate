@@ -27,6 +27,8 @@
 \usepackage{amssymb}
 \usepackage{booktabs}
 \usepackage{array}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit,backgrounds,calc}
 
 \title{ViAmpleHate: A Proposed AmpleHate- and PhoBERT-based Approach\\ for Vietnamese Hate Speech Detection}
 
@@ -133,11 +135,58 @@ The target-cue and attack-cue banks are central to ViAmpleHate. Both are seeded 
 \subsection{Problem formulation}
 Given a Vietnamese comment $x$, the model predicts $y \in \{\textsc{non-hate}, \textsc{hate}\}$. ViAmpleHate inherits AmpleHate's target-aware idea and adapts it through five changes: Vietnamese target extraction, separate target/attack cue channels, relation-bank attention, a corrected batched attention computation, and adaptive-gate injection (Figure~\ref{fig:arch}).
 
-% FIGURE 2 — Overall architecture. MOST IMPORTANT, DRAW NEW (draw.io/PowerPoint).
+% FIGURE 2 — Overall architecture (TikZ, native vector).
 \begin{figure*}[t]
   \centering
-  \includegraphics[width=0.9\linewidth]{example-image}
-  \caption{Overall architecture of ViAmpleHate. \textbf{[DRAW NEW]} A comment is normalized, word-segmented, and encoded by PhoBERT; Vietnamese NER + target cues yield $T_x$ and attack cues yield $A_x$; three relation channels are fused and injected into $h_0$ through an instance-adaptive gate before classification ($L=L_{\mathrm{CE}}+\alpha L_{\mathrm{CL}}$).}
+  \resizebox{\textwidth}{!}{%
+  \begin{tikzpicture}[
+      >={Latex[length=2mm]},
+      font=\footnotesize,
+      base/.style ={rectangle, rounded corners=2pt, draw=black!45, fill=black!6,
+                    align=center, inner sep=4pt, minimum height=10mm, text width=20mm},
+      novel/.style={rectangle, rounded corners=2pt, draw=orange!80!black, line width=0.9pt,
+                    fill=orange!16, align=center, inner sep=4pt, minimum height=10mm, text width=22mm},
+      attn/.style ={rectangle, rounded corners=2pt, draw=orange!75!black, fill=orange!8,
+                    align=center, inner sep=3pt, minimum height=7mm, text width=16mm, font=\scriptsize},
+      io/.style   ={rectangle, rounded corners=7pt, draw=blue!55, fill=blue!8,
+                    align=center, inner sep=4pt, minimum height=10mm, text width=18mm},
+      flow/.style ={->, draw=black!55, line width=0.7pt},
+      lbl/.style  ={font=\scriptsize\itshape, fill=white, inner sep=1pt}
+    ]
+    % --- main path nodes (explicit coordinates, cm) ---
+    \node[io]    (inp) at (0,0)      {Vietnamese\\comment $x$};
+    \node[base]  (pre) at (2.5,0)    {Preprocessing\\{\scriptsize normalize $\cdot$ word-seg $\cdot$ tokenize}};
+    \node[base]  (enc) at (5.2,1.3)  {PhoBERT\\encoder\\{\scriptsize $d{=}768$}};
+    \node[novel] (det) at (5.2,-1.3) {Target \& attack\\detection\\{\scriptsize Vi-NER $+$ cues}};
+    % --- relation-bank attention channels ---
+    \node[attn] (re) at (8.4,1.15)  {$r_{\mathrm{exp}}$\\{\scriptsize target}};
+    \node[attn] (ri) at (8.4,0.0)   {$r_{\mathrm{imp}}$\\{\scriptsize context}};
+    \node[attn] (ra) at (8.4,-1.15) {$r_{\mathrm{atk}}$\\{\scriptsize attack}};
+    % --- downstream ---
+    \node[novel] (gate) at (11.9,0)  {Adaptive gate\\{\scriptsize $z{=}h_0{+}g\,r$}};
+    \node[base]  (clf)  at (14.2,0)  {Classifier\\{\scriptsize $+$ threshold}};
+    \node[io]    (out)  at (16.4,0)  {NON-HATE\\/ HATE};
+    \node[font=\scriptsize] (loss) at (11.9,-2.1) {$L=L_{\mathrm{CE}}+\alpha\,L_{\mathrm{CL}}$};
+    % --- relation-bank container (background) ---
+    \begin{scope}[on background layer]
+      \node[draw=orange!70!black, dashed, rounded corners=3pt, fill=orange!4,
+            fit=(re)(ri)(ra), inner sep=5pt,
+            label={[font=\scriptsize, text=orange!55!black]above:Relation-bank attention}] (relbox) {};
+    \end{scope}
+    % --- arrows ---
+    \draw[flow] (inp) -- (pre);
+    \draw[flow] (pre.east) -- (enc.west);
+    \draw[flow] (pre.east) -- (det.west);
+    \draw[flow] (enc.east) -- node[lbl,pos=0.65]{$h_0$} (relbox.north west);
+    \draw[flow] (det.east) -- node[lbl,pos=0.65]{$T_x,A_x$} (relbox.south west);
+    \draw[flow] (relbox.east) -- node[lbl]{$r$} (gate.west);
+    \draw[flow] (enc.north) -- (5.2,2.3) -- node[lbl]{$h_0$ (residual)} (11.9,2.3) -- (gate.north);
+    \draw[flow] (gate) -- node[lbl]{$z$} (clf);
+    \draw[flow] (clf) -- (out);
+    \draw[->, draw=black!40, dashed] (gate.south) -- (loss.north);
+  \end{tikzpicture}%
+  }
+  \caption{Overall architecture of ViAmpleHate. A comment is normalized, word-segmented, and encoded by PhoBERT (global representation $h_0$); Vietnamese NER and the target-cue bank yield the target set $T_x$ while the attack-cue bank yields $A_x$. Three relation channels---explicit target ($r_{\mathrm{exp}}$), implicit context ($r_{\mathrm{imp}}$), and attack ($r_{\mathrm{atk}}$)---are fused into $r$ and injected into $h_0$ through an instance-adaptive gate ($z=h_0+g\,r$) before classification. The model is trained with weighted cross-entropy plus a contrastive term ($L=L_{\mathrm{CE}}+\alpha L_{\mathrm{CL}}$). Orange marks the components introduced by ViAmpleHate.}
   \label{fig:arch}
 \end{figure*}
 
@@ -338,7 +387,7 @@ To make the error modes concrete, Table~\ref{tab:qual} shows illustrative commen
     \toprule
     \textbf{Data} & \textbf{Class} & \textbf{P} & \textbf{R} & \textbf{F1} \\
     \midrule
-    ViHSD & NON-HATE & 0.9541 & 0.9574 & -- \\
+    ViHSD & NON-HATE & 0.9541 & 0.9574 & 0.9558 \\
     ViHSD & HATE     & 0.6177 & 0.5988 & 0.6081 \\
     VOZ   & NON-HATE & 0.9638 & 0.9719 & 0.9678 \\
     VOZ   & HATE     & 0.7347 & 0.6803 & 0.7065 \\
