@@ -1,17 +1,17 @@
 # ViAmpleHate
 
-**A Proposed AmpleHate- and PhoBERT-based Approach for Vietnamese Hate Speech Detection**
+**An AmpleHate- and PhoBERT-based approach for Vietnamese hate speech detection**
 
-ViAmpleHate is a Vietnamese adaptation of the **AmpleHate** model for hate speech detection on Vietnamese social media, built on top of **PhoBERT**. The project addresses a core limitation: the original AmpleHate relies on English NER and therefore almost never finds a *target* in Vietnamese (only ~0.09% of comments), collapsing the model into a plain sentence classifier. ViAmpleHate replaces English NER with Vietnamese NER plus hand-curated *cue banks*, raising target coverage to ~19–45% and clearly improving F1 on the minority HATE class.
+ViAmpleHate is a research project on Vietnamese social-media hate speech detection. It adapts the **target-aware** idea of AmpleHate to Vietnamese by combining **PhoBERT**, Vietnamese NER, manually curated cue banks, relation-bank attention, and an instance-adaptive gate.
+
+The starting point is a clear limitation of the original AmpleHate pipeline: because it relies on English NER and English-oriented target categories, it almost never finds usable targets in Vietnamese comments. On our training data, English NER detects a usable target in only about 0.09% of comments, causing the model to behave almost like a plain sentence classifier. ViAmpleHate replaces English NER with Vietnamese NER plus Vietnamese target and attack cue banks.
 
 ---
 
 ## Team
 
-**Students:**
-
 | Student ID | Full name |
-|----------|------------------------|
+|---|---|
 | 23521687 | Tran Nguyen Duc Trung |
 | 23521718 | Nguyen Ha Minh Tuan |
 | 23520881 | Nguyen Gia Cat Long |
@@ -20,214 +20,201 @@ ViAmpleHate is a Vietnamese adaptation of the **AmpleHate** model for hate speec
 
 **Supervisor:** M.Sc. Huynh Van Tin
 
-University of Information Technology, VNU-HCM (UIT, VNU-HCM).
+**Institution:** University of Information Technology, VNU-HCM.
 
 ---
 
-## Table of Contents
+## Main Idea
 
-- [Motivation & Contributions](#motivation--contributions)
-- [Method Overview](#method-overview)
-- [Repository Structure](#repository-structure)
-- [Data](#data)
-- [Installation & Environment](#installation--environment)
-- [How to Run](#how-to-run)
-- [Results](#results)
-- [Detailed Results (classification reports)](#detailed-results-classification-reports)
-- [Limitations](#limitations)
-- [Paper](#paper)
-- [References](#references)
+Vietnamese hate speech often does not name an explicit entity. The target may appear as a pronoun, group noun, regional label, informal form of address, slang expression, or indirect reference. A model that depends only on English-style NER therefore misses most of the target-aware signal.
+
+ViAmpleHate has five main components:
+
+1. **Vietnamese target extraction:** use Vietnamese NER `NlpHUST/ner-vietnamese-electra-base` together with a `target-cue bank`.
+2. **Separate target and attack signals:** add an `attack-cue bank` for hostile predicates.
+3. **Relation-bank attention:** model three relation channels: explicit target, implicit context, and attack.
+4. **Instance-adaptive gate:** replace fixed relation injection with a per-instance gate.
+5. **Imbalance-aware training:** combine weighted cross-entropy with a contrastive loss.
 
 ---
 
-## Motivation & Contributions
+## Architecture Overview
 
-Vietnamese hate speech detection is hard because hateful intent rarely sits in an explicit named entity; instead it hides in informal group references, slang, sarcasm, and indirect insinuation. Target-aware models such as AmpleHate show that attending to the relationship between an utterance and the *target it addresses* helps detect even implicit hate. However, AmpleHate's original pipeline relies on English NER and English-oriented target categories, so it transfers poorly to Vietnamese: English NER finds a usable target in only **~0.09%** of training comments.
-
-Key contributions of ViAmpleHate:
-
-1. **Vietnamese target extraction.** Replace English NER with Vietnamese NER plus a hand-curated *target-cue* bank (pronouns, kinship/group nouns, regional and demographic labels, informal address forms) → raising target coverage from ~0.09% to **~18.8–20.0%** (ViHSD) and **~43–45%** (VOZ-HSD).
-2. **Separate target and attack channels.** Add a dedicated *attack-cue* bank for hostile predicates, modeling target and attack as distinct signals through a three-channel **relation-bank attention**.
-3. **Adaptive fusion.** Replace AmpleHate's fixed-scalar injection with an **instance-adaptive gate**; plus an implementation-level correction to the batch-level attention computation (reported as an *implementation note*).
-4. **Training objective.** Combine weighted cross-entropy with a contrastive loss to sharpen HATE/NON-HATE separation under class imbalance.
-5. **Empirical study.** Evaluate on ViHSD and VOZ-HSD against 5 baselines, with target-coverage analysis and error analysis.
-
-> Broader message: target-awareness is a genuinely useful inductive bias for hate speech detection, **but only when adapted to the surface forms of the target language**, rather than transferred verbatim from English.
-
----
-
-## Method Overview
-
-Given a Vietnamese comment `x`, the model predicts a binary label `y ∈ {NON-HATE, HATE}`.
-
-```
-Comment
-  → normalize (teencode, emoji→tag) → word-segment (required by PhoBERT) → tokenize (max_len=256)
-  → PhoBERT-base (768-d) → h_0 = [CLS]
-  → Vietnamese NER + target-cue  ⇒  T_x   (empty ⇒ fallback to [CLS])
-  → attack-cue                   ⇒  A_x   (empty ⇒ fallback to [CLS])
-  → Relation-bank attention (3 channels):
-        r_exp = HeadAttn(h_0, H[T_x])     # explicit target
-        r_imp = HeadAttn(h_0, h_0)        # implicit context
-        r_atk = HeadAttn(h_0, H[A_x])     # attack
-        r     = W_r [r_exp ; r_imp ; r_atk] + b_r
-  → Instance-adaptive gate:
-        g = σ(W_g [h_0 ; r] + b_g)
-        z = h_0 + g · r
-  → Dropout → Linear → logits
-Loss:  L = L_CE (weighted, label-smoothed) + α · L_CL   (α = 0.1)
-Inference:  threshold t* chosen on validation by macro-F1, fixed for test
+```text
+Vietnamese comment
+  -> normalize, handle teencode/emoji, word-segment, tokenize
+  -> PhoBERT-base
+  -> target extraction: Vietnamese NER + target-cue bank
+  -> attack extraction: attack-cue bank
+  -> relation-bank attention:
+       r_exp = attention([CLS], target tokens)
+       r_imp = attention([CLS], [CLS])
+       r_atk = attention([CLS], attack tokens)
+  -> fuse relation vector
+  -> instance-adaptive gate
+  -> NON-HATE / HATE classifier
 ```
 
-**Cue banks** (hand-curated, seeded from the training split, matched by full token-sequence matching):
-- **Target cues (16):** referential expressions (not hateful by themselves).
-- **Attack cues (24):** hostile predicates (insults, dehumanization, threats).
-- The two banks are kept **separate** on purpose: a target without an attack is usually not hate; an attack without a group target is usually mere offensiveness.
-
-Main configuration: `vinai/phobert-base`, NER `NlpHUST/ner-vietnamese-electra-base`, LR 2e-5 (encoder) / 5e-5 (head), dropout 0.1, effective batch 32 (16 × grad-accum 2), up to 8 epochs (best by val macro-F1), seed 42 (single run).
+The cue banks are intentionally small and manually curated: 16 target cues and 24 attack cues. Target cues are referential and are not hateful by themselves. Attack cues encode insults, dehumanization, threats, or strongly negative evaluations.
 
 ---
 
 ## Repository Structure
 
-```
+```text
 ViAmpleHate/
-├── README.md                       # this document
-├── app/                            # Streamlit demo app
+├── README.md
+├── dataset/
+│   ├── README.md
+│   ├── fasttext/
+│   └── raw/
+├── demo_app/
 │   ├── app.py
 │   ├── model_runtime.py
 │   ├── requirements.txt
 │   └── README.md
-├── dataset/                        # data download guide + label mapping
-│   └── README.md
 ├── notebooks/
 │   └── models/
-│       ├── baselines/              # 5 baselines × 2 datasets (.ipynb + output/)
-│       │   ├── ViHSD - Baseline TF-IDF LR_SVM
-│       │   ├── ViHSD - Baseline BiLSTM_FasttextVi
-│       │   ├── ViHSD - Baseline PhoBERT_CNN
-│       │   ├── ViHSD - Baseline AmpleHate_PhoBERT
-│       │   └── VOZ-HSD - Baseline ...   (similar)
-│       └── proposed/               # proposed ViAmpleHate
-│           ├── ViHSD - Proposed ViAmpleHate_PhoBERT
-│           └── VOZ-HSD - Proposed ViAmpleHate_PhoBERT
-├── paper/
-│   ├── main/
-│   │   ├── latex/v_review/         # LaTeX ACL version (acl_latex.tex, custom.bib)
-│   │   └── markdown/v_review/      # parallel markdown version
-│   ├── related_work/
-│   └── slide/                      # slide content (plain text for Canva)
-└── docs/                           # plans/specs/illustrative figures
+│       ├── baselines/
+│       │   ├── ViHSD - Baseline TF-IDF LR_SVM/
+│       │   ├── ViHSD - Baseline BiLSTM_FasttextVi/
+│       │   ├── ViHSD - Baseline PhoBERT_CNN/
+│       │   ├── ViHSD - Baseline AmpleHate_PhoBERT/
+│       │   └── VOZ-HSD - Baseline .../
+│       └── proposed/
+│           ├── ViHSD - Proposed ViAmpleHate_PhoBERT/
+│           └── VOZ-HSD - Proposed ViAmpleHate_PhoBERT/
+└── paper/
+    ├── draft/
+    │   ├── latex/
+    │   ├── latex_vi/
+    │   └── markdown/
+    ├── overleaf/
+    │   └── latex/
+    └── submit/
+        ├── en/
+        └── vi/
 ```
 
 ---
 
 ## Data
 
-See the detailed download guide at [`dataset/README.md`](dataset/README.md).
+See [`dataset/README.md`](dataset/README.md) for download instructions.
 
-- **ViHSD** — [`uitnlp/vihsd`](https://huggingface.co/datasets/sonlam1102/vihsd) (3 labels: CLEAN/OFFENSIVE/HATE).
-- **VOZ-HSD** — [`tarudesu/VOZ-HSD`](https://huggingface.co/datasets/tarudesu/VOZ-HSD) (2 labels; labels generated by an AI classifier, ViSoBERT-HSD, not human-annotated).
-- **fastText vi** — `cc.vi.300.vec.gz` (used by the BiLSTM baseline).
+| Dataset | Source | Notes |
+|---|---|---|
+| ViHSD | `sonlam1102/vihsd` | Original 3 labels: CLEAN, OFFENSIVE, HATE |
+| VOZ-HSD | `tarudesu/VOZ-HSD` | 2 labels; labels were generated by the ViSoBERT-HSD AI classifier |
+| fastText vi | `cc.vi.300.vec.gz` | Used by the BiLSTM + fastText baseline |
 
-**Binary relabeling** (relabel only — no examples added or removed):
+Binary mapping:
 
-| Original label | ViHSD → | VOZ-HSD → |
-|-----------|------------|-------------|
-| CLEAN | NON-HATE | NON-HATE |
-| OFFENSIVE | NON-HATE | — |
-| HATE | HATE | HATE |
+| Original label | Binary label |
+|---|---|
+| CLEAN | NON-HATE |
+| OFFENSIVE | NON-HATE |
+| HATE | HATE |
 
-Distribution after relabeling (HATE is ~10% throughout — so **macro-F1 / HATE-F1 matter more than accuracy**):
+Distribution after binary mapping:
 
 | Dataset | Split | NON-HATE | HATE | Total |
-|---------|-------|---------:|-----:|------:|
+|---|---:|---:|---:|---:|
 | ViHSD | Train | 21,492 | 2,556 | 24,048 |
 | ViHSD | Dev | 2,402 | 270 | 2,672 |
 | ViHSD | Test | 5,992 | 688 | 6,680 |
-| VOZ | Train | 26,993 | 3,007 | 30,000 |
-| VOZ | Dev | 4,520 | 480 | 5,000 |
-| VOZ | Test | 4,487 | 513 | 5,000 |
+| VOZ-HSD | Train | 26,993 | 3,007 | 30,000 |
+| VOZ-HSD | Dev | 4,520 | 480 | 5,000 |
+| VOZ-HSD | Test | 4,487 | 513 | 5,000 |
+
+Because HATE accounts for only about 10% of the data, macro-F1 and HATE-F1 are more informative than accuracy.
 
 ---
 
-## Installation & Environment
+## Installation
+
+Create a Python environment and install the demo dependencies:
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-pip install -r app\requirements.txt
+pip install -r demo_app\requirements.txt
 ```
 
-- PhoBERT models need to download/cache `vinai/phobert-base`; the proposed model additionally needs `NlpHUST/ner-vietnamese-electra-base`. The first run requires internet access (or a pre-populated HuggingFace cache).
-- If PhoBERT reports `upgrade torch to at least v2.6`: run `pip install --upgrade -r app\requirements.txt` and restart.
-- To use CUDA on Windows: install PyTorch following the official guide at https://pytorch.org/get-started/locally/ **before** running `pip install -r app\requirements.txt`.
+Notes:
+
+- The first PhoBERT run needs to download/cache `vinai/phobert-base`.
+- The proposed model also needs `NlpHUST/ner-vietnamese-electra-base`.
+- On Windows with CUDA, install PyTorch from the official PyTorch instructions before installing the requirements.
+- If an error asks for `torch >= 2.6`, run `pip install --upgrade -r demo_app\requirements.txt`.
 
 ---
 
-## How to Run
+## Running the Notebooks
 
-### 1. Notebooks (training & evaluation)
+Each model is implemented in a separate notebook under `notebooks/models/`.
 
-Each model is a self-contained notebook under `notebooks/models/`. Open the relevant notebook and run the cells in order; artifacts (model, confusion matrix, training curves) are saved to the `output/` folder next to the notebook.
+```text
+notebooks/models/baselines/<DATASET> - Baseline <MODEL>/
+notebooks/models/proposed/<DATASET> - Proposed ViAmpleHate_PhoBERT/
+```
 
-- Baselines: `notebooks/models/baselines/<DATASET> - Baseline <MODEL>/`
-- Proposed: `notebooks/models/proposed/<DATASET> - Proposed ViAmpleHate_PhoBERT/`
+The notebooks save checkpoints, confusion matrices, training curves, and config files into the local `output/` directory next to each notebook.
 
-### 2. Demo app (Streamlit)
+---
 
-Details at [`app/README.md`](app/README.md).
+## Running the Streamlit Demo
+
+The demo app runs one input text through the trained baselines and the proposed ViAmpleHate models.
 
 ```powershell
-streamlit run app\app.py
+streamlit run demo_app\app.py
 ```
 
-The app takes a Vietnamese sentence and runs it through all baselines plus the proposed ViAmpleHate, showing the predicted label for each model. On GPUs with small VRAM (≈4GB), the app runs PyTorch models sequentially and offloads to CPU after each inference to avoid CUDA OOM.
+The app loads checkpoints from `notebooks/models/**/output/`. If a checkpoint or config file is missing, the corresponding model will show an error in the UI.
 
 ---
 
-## Results
+## Main Results
 
-All numbers below come from a **single run (seed 42)** on the test set. The comparison is between the **full proposed system** and **each baseline at its own intended configuration** (not an isolated ablation of individual components).
+All numbers below come from a single run with seed 42. The comparison is between the full proposed system and each baseline at its own intended configuration, not a per-component ablation.
 
-### ViHSD (test)
+### ViHSD Test
 
-| Model | Acc. | Macro-F1 | HATE-F1 |
-|-------|-----:|---------:|--------:|
+| Model | Accuracy | Macro-F1 | HATE-F1 |
+|---|---:|---:|---:|
 | TF-IDF + LR | 0.8910 | 0.7393 | 0.5404 |
 | TF-IDF + SVM | 0.9126 | 0.7131 | 0.4739 |
 | BiLSTM + fastText | 0.8454 | 0.7072 | 0.5060 |
 | PhoBERT-CNN | 0.8945 | 0.7571 | 0.5745 |
-| AmpleHate (baseline) | 0.9175 | 0.7792 | 0.6045 |
+| AmpleHate | 0.9175 | 0.7792 | 0.6045 |
 | **ViAmpleHate** | **0.9205** | **0.7819** | **0.6081** |
-| *Δ vs. baseline* | *+.0030* | *+.0027* | *+.0036* |
+| Delta vs. AmpleHate | +0.0030 | +0.0027 | +0.0036 |
 
-### VOZ-HSD (test)
+### VOZ-HSD Test
 
-| Model | Acc. | Macro-F1 | HATE-F1 |
-|-------|-----:|---------:|--------:|
+| Model | Accuracy | Macro-F1 | HATE-F1 |
+|---|---:|---:|---:|
 | TF-IDF + LR | 0.9453 | 0.7745 | 0.5783 |
 | TF-IDF + SVM | 0.9641 | 0.7831 | 0.5850 |
 | BiLSTM + fastText | 0.8650 | 0.6712 | 0.4187 |
 | PhoBERT-CNN | 0.9623 | 0.8150 | 0.6500 |
-| AmpleHate (baseline) | 0.9643 | 0.8185 | 0.6557 |
+| AmpleHate | 0.9643 | 0.8185 | 0.6557 |
 | **ViAmpleHate** | 0.9420 | **0.8371** | **0.7065** |
-| *Δ vs. baseline* | *−.0223* | *+.0186* | *+.0508* |
+| Delta vs. AmpleHate | -0.0223 | +0.0186 | +0.0508 |
 
-**Observations:** The largest and clearest gains are on the minority HATE class on VOZ-HSD (**HATE-F1 +0.0508**). On ViHSD the improvement is small (+0.0036 HATE-F1), so it is reported as **preliminary** (single run, no significance test). Accuracy *drops* on VOZ while macro-F1/HATE-F1 *rise* — illustrating why accuracy is the wrong headline metric under imbalance.
-
-**Target coverage:** English NER ~0.09% → Vietnamese NER + cues: 20.0%/18.8% (ViHSD train/val), 45.2%/43.0% (VOZ train/val). The dataset with higher coverage (VOZ) is also where ViAmpleHate gains the most — a suggestive correlation (correlational, not proven causal).
+The clearest gain is on the VOZ-HSD HATE class, where HATE-F1 improves by 0.0508 over AmpleHate. On ViHSD, the margin is small and should be checked with multi-seed evaluation.
 
 ---
 
-## Detailed Results (classification reports)
+## Detailed Classification Reports
 
-> This section preserves the full classification reports recorded from the notebooks, for cross-checking and reproduction.
+This section keeps the full classification reports recorded from the notebooks for cross-checking and reproduction.
 
-### ViHSD dataset
+### ViHSD Dataset
 
-```
-TF-IDF + SVM (Tuned) — Test
+```text
+TF-IDF + SVM (Tuned) - Test
   Accuracy   : 0.9126
   F1 Macro   : 0.7131
   F1 Weighted: 0.9030
@@ -244,8 +231,7 @@ TF-IDF + SVM (Tuned) — Test
 weighted avg       0.90      0.91      0.90      6680
 
 
-
-TF-IDF + LR (Tuned) — Test
+TF-IDF + LR (Tuned) - Test
   Accuracy   : 0.8910
   F1 Macro   : 0.7393
   F1 Weighted: 0.8972
@@ -262,7 +248,7 @@ TF-IDF + LR (Tuned) — Test
 weighted avg       0.91      0.89      0.90      6680
 
 BiLSTM - FastTextVi
-Classification Report — Test Set
+Classification Report - Test Set
               precision    recall  f1-score   support
 
     NON-HATE     0.9699    0.8541    0.9083      5992
@@ -272,8 +258,8 @@ Classification Report — Test Set
    macro avg     0.6735    0.8115    0.7072      6680
 weighted avg     0.9088    0.8454    0.8669      6680
 
-PhoBert CNN
-Classification Report — Test Set
+PhoBERT CNN
+Classification Report - Test Set
               precision    recall  f1-score   support
 
     NON-HATE     0.9629    0.9177    0.9398      5992
@@ -283,8 +269,8 @@ Classification Report — Test Set
    macro avg     0.7271    0.8048    0.7571      6680
 weighted avg     0.9143    0.8945    0.9021      6680
 
-PhoBert AmpleHate Origin
-Classification Report — Test Set
+PhoBERT AmpleHate Origin
+Classification Report - Test Set
               precision    recall  f1-score   support
 
     NON-HATE     0.9553    0.9526    0.9540      5992
@@ -294,7 +280,7 @@ Classification Report — Test Set
    macro avg     0.7762    0.7823    0.7792      6680
 weighted avg     0.9184    0.9175    0.9180      6680
 
-PhoBert ViAmpleHate 
+PhoBERT ViAmpleHate
               precision    recall  f1-score   support
 
     NON-HATE     0.9541    0.9574    0.9558      5992
@@ -306,18 +292,17 @@ weighted avg     0.9195    0.9205    0.9200      6680
 
 --------------------------
 Summary
-Accuracy        : 0.9205   (baseline: 0.9175, Δ=+0.0030)
-Macro Precision : 0.7859   (baseline: 0.7762, Δ=+0.0097)
-Macro Recall    : 0.7781   (baseline: 0.7823, Δ=-0.0042)
-Macro F1        : 0.7819   (baseline: 0.7792, Δ=+0.0027)
-F1 (HATE)       : 0.6081   (baseline: 0.6045, Δ=+0.0036)
-
+Accuracy        : 0.9205   (baseline: 0.9175, Delta=+0.0030)
+Macro Precision : 0.7859   (baseline: 0.7762, Delta=+0.0097)
+Macro Recall    : 0.7781   (baseline: 0.7823, Delta=-0.0042)
+Macro F1        : 0.7819   (baseline: 0.7792, Delta=+0.0027)
+F1 (HATE)       : 0.6081   (baseline: 0.6045, Delta=+0.0036)
 ```
 
-### VOZ-HSD dataset
+### VOZ-HSD Dataset
 
-```
-TF-IDF + SVM (Tuned) — Test
+```text
+TF-IDF + SVM (Tuned) - Test
   Accuracy   : 0.9641
   F1 Macro   : 0.7831
   F1 Weighted: 0.9609
@@ -333,7 +318,7 @@ TF-IDF + SVM (Tuned) — Test
    macro avg       0.85      0.74      0.78     10000
 weighted avg       0.96      0.96      0.96     10000
 
-TF-IDF + LR (Tuned) — Test
+TF-IDF + LR (Tuned) - Test
   Accuracy   : 0.9453
   F1 Macro   : 0.7745
   F1 Weighted: 0.9506
@@ -350,7 +335,7 @@ TF-IDF + LR (Tuned) — Test
 weighted avg       0.96      0.95      0.95     10000
 
 BiLSTM - FastTextVi
-Classification Report — Test Set
+Classification Report - Test Set
               precision    recall  f1-score   support
 
     NON-HATE     0.9940    0.8626    0.9237     18929
@@ -360,9 +345,8 @@ Classification Report — Test Set
    macro avg     0.6330    0.8851    0.6712     20000
 weighted avg     0.9553    0.8650    0.8966     20000
 
-
-PhoBert CNN
-Classification Report — Test Set
+PhoBERT CNN
+Classification Report - Test Set
               precision    recall  f1-score   support
 
     NON-HATE     0.9826    0.9775    0.9801      9486
@@ -372,8 +356,8 @@ Classification Report — Test Set
    macro avg     0.8021    0.8292    0.8150     10000
 weighted avg     0.9641    0.9623    0.9631     10000
 
-PhoBert AmpleHate Origin
-Classification Report — Test Set
+PhoBERT AmpleHate Origin
+Classification Report - Test Set
               precision    recall  f1-score   support
 
     NON-HATE     0.9816    0.9807    0.9812      9486
@@ -383,7 +367,7 @@ Classification Report — Test Set
    macro avg     0.8159    0.8211    0.8185     10000
 weighted avg     0.9646    0.9643    0.9644     10000
 
-PhoBert ViAmpleHate 
+PhoBERT ViAmpleHate
               precision    recall  f1-score   support
 
     NON-HATE     0.9638    0.9719    0.9678      4487
@@ -404,39 +388,36 @@ F1 (HATE)       : 0.7065   (baseline: 0.6557, Delta=+0.0508)
 
 ---
 
+## Paper and Reports
+
+| Content | Path |
+|---|---|
+| English LaTeX draft | [`paper/draft/latex/acl_latex.tex`](paper/draft/latex/acl_latex.tex) |
+| Vietnamese LaTeX draft | [`paper/draft/latex_vi/acl_latex.tex`](paper/draft/latex_vi/acl_latex.tex) |
+| Latest Overleaf version | [`paper/overleaf/latex/`](paper/overleaf/latex/) |
+| Vietnamese submission files | [`paper/submit/vi/`](paper/submit/vi/) |
+| English submission files | [`paper/submit/en/`](paper/submit/en/) |
+
+The LaTeX files in `paper/overleaf/latex/` include `en_viamplehate.tex`, `vi_viamplehate.tex`, `custom.bib`, ACL style files, and figures.
+
+---
+
 ## Limitations
 
-- The cue banks are partly hand-built and cannot cover the full, fast-changing space of Vietnamese slang, spelling variants, and creative profanity → this bounds recall on implicit or novel hate.
-- Performance depends on upstream Vietnamese NER / word segmentation / tokenization; misalignment can misplace cues.
-- The decision threshold is tuned on validation and may not be optimal under distribution shift.
-- **Single run (seed 42):** no multi-seed variance, no significance test, and no per-component ablation are reported → the small ViHSD margin is not established.
-- Comparison is against our own re-implementations, not published (SOTA) ViHSD results.
-- Only the binary NON-HATE/HATE formulation is addressed; multi-target or graded hatred is not yet handled.
-
-**Ethics:** Hate speech detection is dual-use; system outputs should be treated as *decision support* for human moderators, not automated enforcement. Datasets are used under their public research terms; the paper uses constructed/masked examples rather than reproducing real slurs.
+- The cue banks are manually curated and do not cover all slang, spelling variants, or new profanity-obfuscation patterns.
+- Results depend on Vietnamese NER, word segmentation, and token/span alignment.
+- The decision threshold is tuned on validation and may not transfer optimally under domain shift.
+- Results are from a single run with seed 42, without statistical significance testing or multi-seed evaluation.
+- The current task is binary NON-HATE/HATE classification and does not yet handle multi-target or graded hate annotations.
 
 ---
 
-## Paper
+## Main References
 
-- **LaTeX (ACL):** [`paper/main/latex/v_review/acl_latex.tex`](paper/main/latex/v_review/acl_latex.tex) — compile with pdfLaTeX (XeLaTeX/LuaLaTeX for full Vietnamese diacritics). Bibliography: `custom.bib`.
-- **Parallel markdown:** [`paper/main/markdown/v_review/`](paper/main/markdown/v_review/)
-- **Revision notes:** [`paper/main/latex/v_review/REVISION_NOTES.md`](paper/main/latex/v_review/REVISION_NOTES.md)
-- **Slides (plain text for Canva):** [`paper/slide/slides_en.txt`](paper/slide/slides_en.txt)
+- AmpleHate: the original target-aware model for implicit hate detection.
+- PhoBERT: `vinai/phobert-base` for Vietnamese representation learning.
+- ViHSD: Vietnamese Hate Speech Detection dataset.
+- VOZ-HSD: hate speech dataset from the VOZ forum.
+- fastText: `cc.vi.300.vec.gz` for the BiLSTM baseline.
 
----
-
-## References
-
-- **AmpleHate** — the original target-aware model.
-- **PhoBERT** — Nguyen & Nguyen (2020), the foundational Vietnamese encoder (`vinai/phobert-base`).
-- **ViHSD** — Vietnamese Hate Speech Detection dataset (`uitnlp/vihsd`).
-- **VOZ-HSD** — `tarudesu/VOZ-HSD`.
-- **Vietnamese NER** — `NlpHUST/ner-vietnamese-electra-base`.
-- **fastText** — Grave et al. (2018), *Learning Word Vectors for 157 Languages*, LREC 2018.
-
-> Full citations with venue/year metadata are in `paper/main/latex/v_review/custom.bib`.
-
----
-
-*Course project — University of Information Technology, VNU-HCM.*
+Full BibTeX entries are in [`paper/overleaf/latex/custom.bib`](paper/overleaf/latex/custom.bib).
