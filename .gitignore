@@ -9,5 +9,6 @@ cc.vi.300.vec.gz
 keep/
 .codex/
 __pycache__/\
+draft/
 
 .venv/
