@@ -37,6 +37,7 @@
 \usepackage{booktabs}
 \usepackage{array}
 \usepackage{float}
+\usepackage{flafter} % float không bao giờ xuất hiện trước vị trí khai báo
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning,fit,backgrounds,calc}
 
@@ -65,7 +66,7 @@ Trên ViHSD và VOZ-HSD, trong thiết lập nhị phân NON-HATE/HATE, ViAmpleH
 
 \section{Giới thiệu}
 
-Sự phát triển nhanh của mạng xã hội tiếng Việt đi kèm với sự lan rộng của nội dung thù ghét và lăng mạ. Những nội dung này gây hại cho cá nhân, cộng đồng bị nhắm tới, đồng thời tạo rủi ro pháp lý và danh tiếng cho các nền tảng. Khi lượng nội dung vượt xa khả năng kiểm duyệt thủ công, phát hiện phát ngôn thù ghét tự động trở thành nhu cầu cấp thiết. Tuy nhiên, phần lớn tiến bộ hiện nay vẫn tập trung ở tiếng Anh và các ngôn ngữ giàu tài nguyên; khi áp dụng sang tiếng Việt, hiệu quả thường giảm đáng kể.
+Mạng xã hội tiếng Việt phát triển nhanh, và đi cùng với đó là sự lan rộng của nội dung thù ghét, lăng mạ. Những nội dung này gây tổn thương cho cá nhân và cộng đồng bị nhắm tới, đồng thời đặt các nền tảng trước rủi ro về pháp lý lẫn uy tín. Khi lượng nội dung do người dùng tạo ra vượt xa khả năng kiểm duyệt thủ công, phát hiện phát ngôn thù ghét tự động gần như trở thành một nhu cầu bắt buộc. Tuy vậy, phần lớn tiến bộ cho đến nay vẫn dồn về tiếng Anh và các ngôn ngữ giàu tài nguyên, nên khi chuyển sang tiếng Việt, hiệu quả thường sụt giảm đáng kể.
 
 Phát hiện phát ngôn thù ghét tiếng Việt khó vì ba lý do đan xen. Thứ nhất, ngôn ngữ trên mạng xã hội rất nhiễu: người dùng viết tắt, dùng \emph{teencode}, kéo dài ký tự, chèn emoji mang sắc thái ngữ dụng và viết sai chính tả, đôi khi còn cố tình che lời tục để né bộ lọc. Thứ hai, và cũng là điểm quan trọng nhất, \emph{target} của một lời công kích hiếm khi là một thực thể có tên. Nếu trong tiếng Anh, phát ngôn thù ghét thường gọi đích danh một cá nhân, tổ chức hoặc quốc tịch, thì trong tiếng Việt sự thù địch thường hướng tới cả một nhóm thông qua đại từ, danh từ thân tộc hay danh từ chỉ nhóm, nhãn vùng miền hoặc các lối xưng hô phi chính thức. Thứ ba, dữ liệu bị mất cân bằng mạnh: ở cả hai bộ dữ liệu, lớp HATE chỉ chiếm khoảng một phần mười, nên mô hình vẫn có thể đạt accuracy cao dù gần như không phát hiện được trường hợp thù ghét nào.
 
@@ -79,7 +80,7 @@ Nhóm đề xuất \textbf{ViAmpleHate}, một phiên bản thích ứng của A
   \item \textbf{Hàm mục tiêu huấn luyện.} Nhóm kết hợp weighted cross-entropy với contrastive loss để làm rõ hơn ranh giới giữa HATE và NON-HATE trong điều kiện mất cân bằng.
   \item \textbf{Nghiên cứu thực nghiệm.} Nhóm đánh giá trên ViHSD và VOZ-HSD với năm baseline, đồng thời phân tích nguồn gốc của các mức cải thiện, bao gồm độ phủ target và khảo sát định tính những lỗi còn lại.
 \end{enumerate}
-target-aware là một inductive bias hữu ích cho bài toán phát hiện phát ngôn thù ghét, nhưng chỉ phát huy đầy đủ khi được thích ứng với đặc trưng bề mặt của ngôn ngữ đích, thay vì chuyển nguyên xi từ tiếng Anh.
+Thông điệp rộng hơn là: target-aware vốn là một inductive bias hữu ích cho bài toán phát hiện phát ngôn thù ghét, nhưng chỉ thực sự phát huy khi được thích ứng với đặc trưng bề mặt của ngôn ngữ đích, thay vì bê nguyên xi từ tiếng Anh sang.
 
 \section{Công trình liên quan}
 
@@ -87,7 +88,7 @@ target-aware là một inductive bias hữu ích cho bài toán phát hiện ph�
 Các phương pháp phát hiện phát ngôn thù ghét tự động đã phát triển từ classifier dựa trên từ điển và đặc trưng thủ công \citep{davidson2017,schmidt2017survey}, qua các mô hình chuỗi sâu, đến các transformer tiền huấn luyện gần đây. Một trở ngại dai dẳng là thù ghét \emph{hàm ẩn}: thông điệp thể hiện sự thù địch mà không dùng slur tường minh, thay vào đó dựa vào mỉa mai, định kiến, tham chiếu được mã hóa hoặc kiến thức nội nhóm \citep{elsherief2021latent}. Dạng này thường gặp hơn slur lộ liễu và đặc biệt khó đối với các hệ thống dựa trên từ khóa, qua đó thúc đẩy những hướng tiếp cận có khả năng suy luận \emph{ai} bị nhắm tới và \emph{bị nhắm tới theo cách nào}.
 
 \subsection{AmpleHate}
-AmpleHate \citep{amplehate} xử lý thù ghét hàm ẩn bằng cách khuếch đại attention giữa biểu diễn toàn cục của câu và các target ứng viên. Mô hình trích target token bằng NER, tính một HeadAttention vector với query từ \texttt{[CLS]} và key/value từ target token, rồi inject kết quả này với một hệ số cố định trước khi phân loại. Quan điểm cốt lõi của mô hình, rằng target là tín hiệu then chốt, trực tiếp truyền cảm hứng cho công trình này. Tuy vậy, các hạn chế khi áp dụng cho tiếng Việt cũng khá rõ: mô hình giả định NER và phạm trù target kiểu tiếng Anh, inject thông tin quan hệ với cùng cường độ cho mọi mẫu, và chỉ mô hình hóa một quan hệ (target) mà bỏ qua vị từ thù địch (\emph{attack}), tức yếu tố biến một lời nhắc tên thành lời thù ghét.
+AmpleHate \citep{amplehate} xử lý thù ghét hàm ẩn bằng cách khuếch đại attention giữa biểu diễn toàn cục của câu và các target ứng viên. Mô hình trích target token bằng NER, tính một HeadAttention vector với query từ \texttt{[CLS]} và key/value từ target token, rồi inject kết quả này với một hệ số cố định trước khi phân loại. Ý tưởng cốt lõi---rằng target là tín hiệu then chốt---chính là nguồn cảm hứng trực tiếp cho công trình này. Dù vậy, những hạn chế khi đem AmpleHate sang tiếng Việt cũng hiện ra khá rõ: mô hình mặc định NER và phạm trù target kiểu tiếng Anh, inject thông tin quan hệ với cùng một cường độ cho mọi mẫu, và chỉ mô hình hóa duy nhất quan hệ target mà bỏ qua vị từ thù địch (\emph{attack})---chính là yếu tố biến một lời nhắc tên thành lời thù ghét.
 
 \subsection{Phát hiện phát ngôn thù ghét tiếng Việt}
 Tiếng Việt ngày càng có nhiều tài nguyên và mô hình cho bài toán phát hiện phát ngôn thù ghét. ViHSD \citep{vihsd} cung cấp một bộ dữ liệu ba lớp (CLEAN/OFFENSIVE/HATE) quy mô lớn và đã trở thành một benchmark tiêu chuẩn. ViTHSD \citep{vithsd} đặt lại bài toán xoay quanh \emph{target} bằng cách chú thích mức độ thù ghét nhắm vào từng target; điều này củng cố vai trò trung tâm của target và ủng hộ thiết kế target-aware của nhóm. Khác với ViTHSD, ViAmpleHate không đòi hỏi chú thích target ở mức span: mô hình tự định vị target và attack bằng NER kết hợp cue bank, nên vẫn áp dụng được cho các bộ dữ liệu chỉ có nhãn ở mức câu.
@@ -108,12 +109,12 @@ VOZ-HSD \citep{vozhsd}, được phát hành cùng ViHateT5 \citep{vihatet5}, g�
 
 \subsection{Gán nhãn nhị phân và tiền xử lý}
 \label{sec:reshape}
-Thao tác duy nhất nhóm thực hiện là \emph{gán nhãn lại}; số lượng mẫu không bị thay đổi hay lấy mẫu lại. Cụ thể, bài toán được đưa về phân loại nhị phân bằng cách gộp CLEAN và OFFENSIVE thành NON-HATE, đồng thời giữ HATE làm lớp dương. Cách làm này giúp tập trung vào thù ghét hướng nhóm (thay vì lời tục hoặc sự gây hấn nói chung) và tạo ra một không gian nhãn nhất quán giữa các bộ dữ liệu. Mỗi bình luận sau đó được chuẩn hóa (viết thường; bỏ URL và ký hiệu; gộp các ký tự bị kéo dài; chuẩn hóa teencode; ánh xạ các emoji thường gặp về những nhãn ngữ dụng thô như chế giễu, tức giận, ghê tởm hoặc cười cợt), rồi tách từ---bước bắt buộc vì PhoBERT được tiền huấn luyện trên văn bản tiếng Việt đã được tách từ---và cuối cùng token hóa bằng tokenizer của PhoBERT.
+Thao tác duy nhất nhóm thực hiện là \emph{gán nhãn lại}; số lượng mẫu không bị thay đổi hay lấy mẫu lại. Cụ thể, bài toán được đưa về phân loại nhị phân bằng cách gộp CLEAN và OFFENSIVE thành NON-HATE, đồng thời giữ HATE làm lớp dương. Cách làm này giúp tập trung vào thù ghét hướng nhóm (thay vì lời tục hoặc sự gây hấn nói chung) và tạo ra một không gian nhãn nhất quán giữa các bộ dữ liệu. Mỗi bình luận sau đó được chuẩn hóa (viết thường; bỏ URL và ký hiệu; gộp các ký tự bị kéo dài; chuẩn hóa teencode; ánh xạ các emoji thường gặp về những nhãn ngữ dụng thô như chế giễu, tức giận, ghê tởm hoặc cười cợt), rồi tách từ---bước bắt buộc vì PhoBERT được tiền huấn luyện trên văn bản tiếng Việt đã được tách từ---và cuối cùng token hóa bằng tokenizer của PhoBERT. Phân phối lớp sau khi gán nhãn được tóm tắt trong Bảng~\ref{tab:data} và minh họa ở Hình~\ref{fig:dist}.
 
-\begin{table}[tbp]
+\begin{table}[!t]
   \centering
   \small
-  \setlength{\tabcolsep}{3pt}
+  \resizebox{\columnwidth}{!}{%
   \begin{tabular}{llrrr}
     \toprule
     \textbf{Bộ dữ liệu} & \textbf{Tập} & \textbf{NON-HATE} & \textbf{HATE} & \textbf{Tổng} \\
@@ -126,9 +127,17 @@ Thao tác duy nhất nhóm thực hiện là \emph{gán nhãn lại}; số lư�
     VOZ   & Test  & 4{.}487  & 513     & 5{.}000  \\
     \bottomrule
   \end{tabular}
+  }
   \caption{Thống kê bộ dữ liệu sau khi gán nhãn nhị phân. Lớp HATE chiếm $\approx$10\% ở mọi tập, nên macro-F1 và HATE-F1 phản ánh hiệu năng phù hợp hơn accuracy.}
   \label{tab:data}
 \end{table}
+
+\begin{figure}[!t]
+  \centering
+  \includegraphics[width=\columnwidth]{image/figure1.png}
+  \caption{Phân phối lớp của ViHSD và VOZ-HSD sau khi gán nhãn nhị phân.}
+  \label{fig:dist}
+\end{figure}
 
 \subsection{Xây dựng cue bank}
 \label{sec:cue}
@@ -140,7 +149,7 @@ Hai thành phần trung tâm của ViAmpleHate là target-cue bank và attack-cu
 Với một bình luận tiếng Việt $x$, mô hình dự đoán $y \in \{\textsc{non-hate}, \textsc{hate}\}$. ViAmpleHate kế thừa ý tưởng target-aware của AmpleHate và thích ứng ý tưởng này qua năm thay đổi: trích xuất target tiếng Việt, tách riêng hai kênh target/attack cue, relation-bank attention, phép tính attention theo batch đã được chỉnh sửa, và injection thông qua adaptive gate (Hình~\ref{fig:arch}).
 
 % HÌNH 2 — Kiến trúc tổng thể (TikZ, vector gốc).
-\begin{figure*}[tp]
+\begin{figure*}[!t]
   \centering
   \resizebox{\textwidth}{!}{%
   \begin{tikzpicture}[
@@ -199,10 +208,14 @@ Mỗi bình luận được chuẩn hóa, tách từ, token hóa bằng tokenize
 
 \subsection{Trích xuất đa tín hiệu target và attack}
 Tập chỉ số target được hợp nhất từ NER tiếng Việt và kết quả khớp target cue, còn tập chỉ số attack đến từ kết quả khớp attack cue. Nếu một trong hai tập rỗng, mô hình fallback về \texttt{[CLS]} để luôn có sẵn một biểu diễn hàm ẩn ở mức câu:
-\begin{align}
-  T_x &= M_{\mathrm{NER}}(x)\cup M_{\mathrm{target}}(x), \; A_x = M_{\mathrm{attack}}(x) \\
-  T_x &\leftarrow \{0\}\ \text{nếu } T_x=\varnothing; \; A_x \leftarrow \{0\}\ \text{nếu } A_x=\varnothing \nonumber
-\end{align}
+\begin{equation}
+\begin{aligned}
+  T_x &= M_{\mathrm{NER}}(x)\cup M_{\mathrm{target}}(x), \\
+  A_x &= M_{\mathrm{attack}}(x), \\
+  T_x &\leftarrow \{0\}\ \text{nếu } T_x=\varnothing, \\
+  A_x &\leftarrow \{0\}\ \text{nếu } A_x=\varnothing.
+\end{aligned}
+\end{equation}
 
 \subsection{PhoBERT encoder}
 \begin{equation}
@@ -223,12 +236,12 @@ trong đó mỗi module áp dụng trên $E \in \mathbb{R}^{m\times d}$ và tín
 \end{equation}
 Cuối cùng, ba vector được fuse thành $r = W_r[\,r_{\mathrm{exp}};r_{\mathrm{imp}};r_{\mathrm{atk}}\,] + b_r$.
 
-\subsection{Batched attention (ghi chú triển khai)}
+\subsection{Batched attention}
 Trong quá trình tái triển khai, nhóm nhận thấy attention kiểu AmpleHate, nếu được tính bằng $QK^\top$ trên toàn bộ batch ($Q,K\in\mathbb{R}^{B\times d}\Rightarrow QK^\top\in\mathbb{R}^{B\times B}$), có thể trộn lẫn thông tin giữa các mẫu. Vì vậy, nhóm chuyển sang batched attention để mỗi mẫu chỉ attend tới các token của chính nó, với $Q\in\mathbb{R}^{B\times 1\times d}$, $K\in\mathbb{R}^{B\times m\times d}$:
 \begin{equation}
   \mathrm{scores} = \mathrm{bmm}(Q,K^\top)/\sqrt d \in\mathbb{R}^{B\times1\times m},
 \end{equation}
-trong đó phần padding được mask trước softmax ($\mathrm{scores}_j=-\infty$ nếu $\mathrm{mask}_j=0$). Nhóm xem đây là một chỉnh sửa ở mức triển khai cho bản port của mình, không phải một khẳng định về AmpleHate gốc; vì vậy, kết quả này được trình bày như ghi chú triển khai thay vì một thí nghiệm đánh giá riêng.
+trong đó phần padding được mask trước softmax ($\mathrm{scores}_j=-\infty$ nếu $\mathrm{mask}_j=0$). Nhóm xem đây là một chỉnh sửa cho bản port của mình, không phải một khẳng định về AmpleHate gốc, nên không tách phần này ra đánh giá như một thí nghiệm độc lập.
 
 \subsection{Instance-adaptive relation gate}
 Nhóm thay hệ số vô hướng cố định bằng một gate điều chỉnh theo từng mẫu:
@@ -258,9 +271,7 @@ So với PhoBERT, các thành phần thêm vào khá nhẹ: ba HeadAttention mod
 \section{Thực nghiệm}
 
 \subsection{Các baseline}
-Nhóm so sánh với năm baseline, tất cả đều ở dạng nhị phân. \textbf{TF-IDF + LR} và \textbf{TF-IDF + SVM} dùng đặc trưng từ vựng thưa. \textbf{BiLSTM + fastText} \citep{fasttext} kết hợp embedding tĩnh với một mô hình recurrent (LSTM) \citep{hochreiter1997lstm}. \textbf{PhoBERT-CNN} \citep{to2022phobertcnn} xếp chồng CNN feature extractor lên PhoBERT. \textbf{AmpleHate-PhoBERT} là bản port của mô hình gốc với NER tiếng Anh, một HeadAttention đơn và injection cố định $z=h_0+e\,r_{\mathrm{base}}$ ($e=1.0$), dùng chung encoder PhoBERT-base. Như trình bày trong Bảng~\ref{tab:arch}, mỗi mô hình được chạy ở cấu hình dự kiến của chính nó: ViAmpleHate cố ý dùng context window dài hơn (256) và effective batch lớn hơn, vì đây là một phần của hệ thống đề xuất. Do đó, phép so sánh ở đây là giữa toàn bộ hệ thống đề xuất và baseline ở cấu hình tương ứng, không nhằm cô lập đóng góp riêng của từng thành phần.
-
-\begin{table*}[tp]
+\begin{table*}[!t]
   \centering
   \small
   \begin{tabular}{p{0.20\linewidth} p{0.36\linewidth} p{0.36\linewidth}}
@@ -284,26 +295,37 @@ Nhóm so sánh với năm baseline, tất cả đều ở dạng nhị phân. \t
   \label{tab:arch}
 \end{table*}
 
+Nhóm so sánh với năm baseline, tất cả đều ở dạng nhị phân. \textbf{TF-IDF + LR} và \textbf{TF-IDF + SVM} dùng đặc trưng từ vựng thưa. \textbf{BiLSTM + fastText} \citep{fasttext} kết hợp embedding tĩnh với một mô hình recurrent (LSTM) \citep{hochreiter1997lstm}. \textbf{PhoBERT-CNN} \citep{to2022phobertcnn} xếp chồng CNN feature extractor lên PhoBERT. \textbf{AmpleHate-PhoBERT} là bản port của mô hình gốc với NER tiếng Anh, một HeadAttention đơn và injection cố định $z=h_0+e\,r_{\mathrm{base}}$ ($e=1.0$), dùng chung encoder PhoBERT-base. Như trình bày trong Bảng~\ref{tab:arch}, mỗi mô hình được chạy ở cấu hình dự kiến của chính nó: ViAmpleHate cố ý dùng context window dài hơn (256) và effective batch lớn hơn, vì đây là một phần của hệ thống đề xuất. Do đó, phép so sánh ở đây là giữa toàn bộ hệ thống đề xuất và baseline ở cấu hình tương ứng, không nhằm cô lập đóng góp riêng của từng thành phần.
+
 \subsection{Chi tiết triển khai}
 Encoder là \texttt{vinai/phobert-base} (768-d) và NER tiếng Việt là \texttt{NlpHUST/ner-vietnamese-electra-base}. Max length được đặt ở 256; learning rate là $2\mathrm{e}{-}5$ cho encoder và $5\mathrm{e}{-}5$ cho head; dropout là $0.1$; effective batch là 32 (16 $\times$ grad-accum 2). Nhóm huấn luyện tối đa tám epoch và giữ lại checkpoint tốt nhất theo macro-F1 trên tập validation; $\alpha=0.1$ và threshold cũng được chọn trên validation theo macro-F1. Toàn bộ siêu tham số được liệt kê trong Phụ lục~\ref{sec:hparams}.
+
+Về động học huấn luyện, Hình~\ref{fig:curves} cho thấy ViAmpleHate trên ViHSD hội tụ ổn định và đạt macro-F1 validation tốt nhất ở epoch 4.
+
+% HÌNH 3 — Đường cong huấn luyện: training_curves_viamplehate.png
+\begin{figure}[!t]
+  \centering
+  \includegraphics[width=\columnwidth]{image/figure3.png}
+  \caption{Đường cong training/validation của ViAmpleHate trên ViHSD (best epoch 4, macro-F1 trên validation $=0,7852$). \texttt{training\_curves\_viamplehate.png}.}
+  \label{fig:curves}
+\end{figure}
 
 \subsection{Độ đo đánh giá}
 Hai độ đo chính là macro-F1 và HATE-F1, vì chúng phản ánh hiệu năng trên lớp thiểu số tốt hơn nhiều so với accuracy. Khi mẫu dương chỉ chiếm $\approx$10\%, một bộ dự đoán luôn chọn lớp đa số đã đạt hơn 0,89 accuracy dù không phát hiện được trường hợp thù ghét nào. Macro-F1 lấy trung bình F1 trên các lớp, còn HATE-F1 tách riêng lớp mà nhóm quan tâm.
 
 \subsection{Thiết kế thực nghiệm}
-Ngoài điểm số cuối cùng, nhóm còn kiểm tra liệu mỗi thay đổi có khắc phục một hạn chế cụ thể của baseline hay không, từ độ phủ thấp, việc chưa mô hình hóa sự thù địch, đến cách hợp nhất tín hiệu và hàm mất mát. Riêng độ phủ target được khảo sát trực tiếp ở Mục~\ref{sec:coverage}.
+Bên cạnh điểm số cuối cùng, nhóm còn muốn biết liệu mỗi thay đổi có thực sự khắc phục một hạn chế cụ thể của baseline hay không---từ độ phủ thấp, việc chưa mô hình hóa sự thù địch, cho đến cách hợp nhất tín hiệu và hàm mất mát. Riêng độ phủ target được khảo sát trực tiếp ở Mục~\ref{sec:coverage}.
 
 \section{Kết quả và phân tích lỗi}
 
 \subsection{Kết quả chính}
 
-Mỗi mô hình được báo cáo ở đúng cấu hình dự kiến của nó (Mục~\ref{sec:reshape}, Bảng~\ref{tab:arch}), nên các dòng đề xuất so với baseline phản ánh phép so sánh giữa toàn bộ hệ thống đề xuất và baseline ở cấu hình tương ứng. Mọi con số đều đến từ một lần chạy duy nhất (seed 42).
+Mỗi mô hình được báo cáo ở đúng cấu hình dự kiến của nó (Mục~\ref{sec:reshape}, Bảng~\ref{tab:arch}), nên các dòng đề xuất so với baseline phản ánh phép so sánh giữa toàn bộ hệ thống đề xuất và baseline ở cấu hình tương ứng.
 
-\begin{table}[tbp]
+\begin{table}[!t]
   \centering
   \small
-  \setlength{\tabcolsep}{4pt}
-  \textbf{(a) ViHSD (test)}\\[2pt]
+  \resizebox{\columnwidth}{!}{%
   \begin{tabular}{lrrr}
     \toprule
     \textbf{Mô hình} & \textbf{Acc.} & \textbf{Mac-F1} & \textbf{HATE-F1} \\
@@ -316,8 +338,16 @@ Mỗi mô hình được báo cáo ở đúng cấu hình dự kiến của nó 
     \textbf{ViAmpleHate} & \textbf{0.9205} & \textbf{0.7819} & \textbf{0.6081} \\
     \textit{$\Delta$ vs base} & \textit{+.0030} & \textit{+.0027} & \textit{+.0036} \\
     \bottomrule
-  \end{tabular}\\[6pt]
-  \textbf{(b) VOZ-HSD (test)}\\[2pt]
+  \end{tabular}
+  }
+  \caption{Kết quả trên tập test ViHSD. AmpleHate là baseline, $\Delta$ là chênh lệch của ViAmpleHate. Giá trị tốt nhất mỗi cột in đậm (accuracy chỉ để tham khảo).}
+  \label{tab:vihsd}
+\end{table}
+
+\begin{table}[!t]
+  \centering
+  \small
+  \resizebox{\columnwidth}{!}{%
   \begin{tabular}{lrrr}
     \toprule
     \textbf{Mô hình} & \textbf{Acc.} & \textbf{Mac-F1} & \textbf{HATE-F1} \\
@@ -331,30 +361,92 @@ Mỗi mô hình được báo cáo ở đúng cấu hình dự kiến của nó 
     \textit{$\Delta$ vs base} & \textit{--.0223} & \textit{+.0186} & \textit{+.0508} \\
     \bottomrule
   \end{tabular}
-  \caption{Kết quả trên tập test của ViHSD (a) và VOZ-HSD (b); AmpleHate là baseline, $\Delta$ là chênh lệch của ViAmpleHate so với baseline. Giá trị tốt nhất ở mỗi cột được in đậm (accuracy chỉ để tham khảo; riêng VOZ-HSD, baseline có accuracy cao nhất). Tất cả đều từ một lần chạy (seed 42).}
-  \label{tab:main}
+  }
+  \caption{Kết quả trên tập test VOZ-HSD. Giá trị tốt nhất mỗi cột in đậm (accuracy chỉ để tham khảo; baseline có accuracy cao nhất).}
+  \label{tab:voz}
 \end{table}
 
-Các mô hình transformer vượt trội rõ rệt so với baseline từ vựng và embedding tĩnh ở những độ đo quan trọng (Bảng~\ref{tab:main}), cho thấy biểu diễn ngữ cảnh là cần thiết khi thù ghét phụ thuộc vào context, cách diễn đạt phi chính thức và tương tác giữa lời nhắc tới target với vị từ thù địch. Trong nhóm transformer, baseline AmpleHate nhỉnh hơn một PhoBERT classifier thuần nhờ target-aware attention, nhưng lợi ích này bị giới hạn vì NER tiếng Anh hiếm khi tìm được target tiếng Việt hợp lệ, khiến hầu hết đầu vào quay về \texttt{[CLS]}. Nhóm chỉ so sánh với các mô hình tự huấn luyện theo cùng một giao thức; việc đối chiếu với kết quả ViHSD đã công bố được dành cho công trình tương lai.
+Ở những độ đo quan trọng, các mô hình transformer vượt trội rõ rệt so với baseline từ vựng và embedding tĩnh (Bảng~\ref{tab:vihsd} và~\ref{tab:voz}). Điều này cho thấy biểu diễn ngữ cảnh là thật sự cần thiết một khi thù ghét phụ thuộc vào context, vào cách diễn đạt phi chính thức và vào tương tác giữa lời nhắc tới target với vị từ thù địch. Trong nhóm transformer, baseline AmpleHate nhỉnh hơn một PhoBERT classifier thuần nhờ target-aware attention, nhưng lợi ích này bị giới hạn vì NER tiếng Anh hiếm khi tìm được target tiếng Việt hợp lệ, khiến hầu hết đầu vào quay về \texttt{[CLS]}. Nhóm chỉ so sánh với các mô hình tự huấn luyện theo cùng một giao thức; việc đối chiếu với kết quả ViHSD đã công bố được dành cho công trình tương lai.
 
-Trên VOZ-HSD, ViAmpleHate cải thiện cả macro-F1 lẫn HATE-F1 với biên độ rõ ràng (HATE-F1 $+0{,}0508$). Trên ViHSD, khác biệt nhỏ hơn nhiều ($+0{,}0027$ macro-F1, $+0{,}0036$ HATE-F1). Vì mọi số liệu chỉ đến từ một lần chạy (seed 42) và chưa có kiểm định ý nghĩa thống kê, nhóm xem mức tăng trên ViHSD là kết quả sơ bộ. Đáng lưu ý, accuracy lại \emph{giảm} trên VOZ-HSD trong khi macro-F1 và HATE-F1 đều tăng; đây là minh chứng cho thấy accuracy dễ gây hiểu nhầm khi dữ liệu mất cân bằng.
+Trên VOZ-HSD, ViAmpleHate cải thiện cả macro-F1 lẫn HATE-F1 với biên độ rõ ràng (HATE-F1 $+0{,}0508$). Trên ViHSD, khác biệt nhỏ hơn nhiều ($+0{,}0027$ macro-F1, $+0{,}0036$ HATE-F1). Vì chưa có kiểm định ý nghĩa thống kê, nhóm tạm xem mức tăng trên ViHSD là kết quả sơ bộ. Đáng lưu ý, accuracy lại \emph{giảm} trên VOZ-HSD trong khi macro-F1 và HATE-F1 đều tăng; đây là minh chứng cho thấy accuracy dễ gây hiểu nhầm khi dữ liệu mất cân bằng.
+
+\subsection{Kết quả chi tiết theo từng lớp}
+\label{sec:detailed}
+\begin{table*}[!t]
+  \centering
+  \small
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabular}{lcccccccc}
+    \toprule
+    & \multicolumn{3}{c}{\textbf{NON-HATE}} & \multicolumn{3}{c}{\textbf{HATE}} & & \\
+    \cmidrule(lr){2-4}\cmidrule(lr){5-7}
+    \textbf{Mô hình} & P & R & F1 & P & R & F1 & \textbf{Macro-F1} & Acc. \\
+    \midrule
+    \multicolumn{9}{@{}l}{\textit{(a) ViHSD (test)}} \\
+    \midrule
+    TF-IDF + LR          & 0.96 & 0.92 & 0.9382 & 0.48 & 0.62 & 0.5404 & 0.7393 & 0.8910 \\
+    TF-IDF + SVM         & 0.93 & 0.97 & 0.9523 & 0.62 & 0.38 & 0.4739 & 0.7131 & 0.9126 \\
+    BiLSTM + fastText    & 0.97 & 0.85 & 0.9083 & 0.38 & 0.77 & 0.5060 & 0.7072 & 0.8454 \\
+    PhoBERT-CNN          & 0.96 & 0.92 & 0.9398 & 0.49 & 0.69 & 0.5745 & 0.7571 & 0.8945 \\
+    AmpleHate (baseline) & 0.96 & 0.95 & 0.9540 & 0.60 & 0.61 & 0.6045 & 0.7792 & 0.9175 \\
+    \textbf{ViAmpleHate} & \textbf{0.95} & \textbf{0.96} & \textbf{0.9558} & \textbf{0.62} & \textbf{0.60} & \textbf{0.6081} & \textbf{0.7819} & \textbf{0.9205} \\
+    \midrule
+    \multicolumn{9}{@{}l}{\textit{(b) VOZ-HSD (test)}} \\
+    \midrule
+    TF-IDF + LR          & 0.98 & 0.96 & 0.9708 & 0.48 & 0.73 & 0.5783 & 0.7745 & 0.9453 \\
+    TF-IDF + SVM         & 0.97 & 0.99 & 0.9812 & 0.72 & 0.49 & 0.5850 & 0.7831 & 0.9641 \\
+    BiLSTM + fastText    & 0.99 & 0.86 & 0.9237 & 0.27 & 0.91 & 0.4187 & 0.6712 & 0.8650 \\
+    PhoBERT-CNN          & 0.98 & 0.98 & 0.9801 & 0.62 & 0.68 & 0.6500 & 0.8150 & 0.9623 \\
+    AmpleHate (baseline) & 0.98 & 0.98 & 0.9812 & 0.65 & 0.66 & 0.6557 & 0.8185 & 0.9643 \\
+    \textbf{ViAmpleHate} & \textbf{0.96} & \textbf{0.97} & \textbf{0.9678} & \textbf{0.73} & \textbf{0.68} & \textbf{0.7065} & \textbf{0.8371} & \textbf{0.9420} \\
+    \bottomrule
+  \end{tabular}
+  \caption{Báo cáo phân loại chi tiết theo từng lớp trên ViHSD (a) và VOZ-HSD (b), tập test. Macro-F1 là độ đo chính; dòng ViAmpleHate in đậm để làm nổi bật (không phải dấu hiệu tốt nhất theo cột). Precision/recall theo lớp lấy hai chữ số thập phân, còn F1 và macro-F1 lấy bốn chữ số.}
+  \label{tab:detail}
+\end{table*}
+
+Bảng~\ref{tab:detail} trình bày báo cáo phân loại đầy đủ theo từng lớp cho toàn bộ mô hình trên hai tập test, lấy macro-F1 làm độ đo chính. Việc tách riêng từng lớp giúp thấy rõ ảnh hưởng của mất cân bằng: một mô hình có thể đạt F1 của NON-HATE rất cao (trên 0,90 với mọi mô hình transformer) trong khi F1 của HATE---cột thực sự đáng quan tâm---trải trên một khoảng rộng hơn nhiều, từ 0,4187 đến 0,7065. Dòng của mô hình đề xuất được in đậm để làm nổi bật; mô hình này đạt macro-F1 tốt nhất trên cả hai bộ dữ liệu (0,7819 trên ViHSD và 0,8371 trên VOZ-HSD).
+
+Báo cáo chi tiết cho thấy mức tăng macro-F1 đến từ đâu. Trên VOZ-HSD, mô hình đề xuất nâng precision của HATE từ 0,65 lên 0,73 trong khi recall của HATE gần như giữ nguyên so với baseline (0,68 so với 0,66); nhờ vậy, mức tăng $+0{,}0508$ ở HATE-F1 chủ yếu đến từ việc dự đoán dương sạch hơn, chứ không phải do gắn nhãn HATE cho nhiều bình luận hơn. Hai baseline từ vựng và embedding tĩnh nằm ở hai thái cực của đánh đổi precision--recall: BiLSTM + fastText đạt recall HATE cao nhất trên cả hai bộ dữ liệu (0,77 trên ViHSD và 0,91 trên VOZ-HSD) nhưng precision HATE lại thấp đến mức (0,38 và 0,27) khiến macro-F1 của nó yếu nhất trong sáu mô hình; ngược lại, TF-IDF + SVM rất dè dặt---precision HATE cao, recall HATE thấp---nên bỏ sót phần lớn trường hợp thù ghét. Các mô hình transformer bám sát nhau hơn nhiều, và trong nhóm này, góc nhìn theo lớp cho thấy lợi thế của ViAmpleHate tập trung ở cột HATE, còn F1 của NON-HATE gần như ngang bằng baseline---đúng với hành vi ta mong muốn khi lớp thiểu số mới là lớp cần quan tâm.
+
+\begin{table}[!t]
+  \centering
+  \small
+  \resizebox{\columnwidth}{!}{%
+  \begin{tabular}{llrrr}
+    \toprule
+    \textbf{Dữ liệu} & \textbf{Lớp} & \textbf{P} & \textbf{R} & \textbf{F1} \\
+    \midrule
+    ViHSD & NON-HATE & 0.9541 & 0.9574 & 0.9558 \\
+    ViHSD & HATE     & 0.6177 & 0.5988 & 0.6081 \\
+    VOZ   & NON-HATE & 0.9638 & 0.9719 & 0.9678 \\
+    VOZ   & HATE     & 0.7347 & 0.6803 & 0.7065 \\
+    \bottomrule
+  \end{tabular}
+  }
+  \caption{Kết quả theo từng lớp của ViAmpleHate (tập test).}
+  \label{tab:perclass}
+\end{table}
+
+Ở cấp độ tổng thể, ma trận nhầm lẫn trong Hình~\ref{fig:cm} cho thấy ViAmpleHate giảm số false positive của lớp HATE so với baseline trên ViHSD.
+
+% HÌNH 4 — Ma trận nhầm lẫn ViHSD: baseline so với đề xuất.
+\begin{figure*}[!t]
+  \centering
+  \includegraphics[width=0.45\linewidth]{image/figure4a.png}\hfill
+  \includegraphics[width=0.45\linewidth]{image/figure4b.png}
+  \caption{Confusion matrix trên ViHSD: AmpleHate baseline (trái) so với ViAmpleHate (phải). \texttt{confusion\_matrix\_amplehate.png} và \texttt{confusion\_matrix\_viamplehate.png}; lưu ý số false positive của lớp HATE giảm.}
+  \label{fig:cm}
+\end{figure*}
 
 \subsection{Tác động của trích xuất target tiếng Việt}
 \label{sec:coverage}
 Một yếu tố có thể góp phần là độ phủ target, tức tỷ lệ bình luận có $T_x \neq \{0\}$ (NER tiếng Việt hoặc một target cue được kích hoạt). Với NER tiếng Anh, chỉ $\approx$0,09\% bình luận train có target (21/24{.}048), nên nhánh target-aware của baseline gần như không hoạt động. Khi dùng NER tiếng Việt cùng target-cue bank, độ phủ target tăng lên 20,0\%/18,8\% trên 500 bình luận train/validation đầu của ViHSD và 45,2\%/43,0\% trên VOZ-HSD (cùng bank 16 cue); độ phủ attack cue thấp hơn, lần lượt là 5,2\%/4,2\% (ViHSD) và 7,6\%/6,0\% (VOZ). Đáng chú ý, bộ dữ liệu có độ phủ cao hơn (VOZ-HSD) cũng là nơi ViAmpleHate cải thiện nhiều nhất (HATE-F1 $+0{,}0508$ so với $+0{,}0036$), tạo ra một tương quan gợi mở. Tuy vậy, độ phủ chỉ là thống kê \emph{đầu vào}: nó cung cấp thêm vị trí để relation-bank attention attend tới, nhưng chưa đủ để chứng minh rằng việc kích hoạt cue trực tiếp cải thiện từng quyết định.
 
-% HÌNH 3 — Đường cong huấn luyện: training_curves_viamplehate.png
-\begin{figure}[tbp]
-  \centering
-  \includegraphics[width=\columnwidth]{image/figure3.png}
-  \caption{Đường cong training/validation của ViAmpleHate trên ViHSD (best epoch 4, macro-F1 trên validation $=0,7852$). \texttt{training\_curves\_viamplehate.png}.}
-  \label{fig:curves}
-\end{figure}
-
 \subsection{Phân tích định tính}
 Để minh họa cụ thể các kiểu lỗi, Bảng~\ref{tab:qual} liệt kê một số dạng bình luận tiêu biểu. Đây là các ví dụ dựng lại theo những phạm trù quan sát được; trong phiên bản camera-ready, nên thay bằng mẫu test thực đã ẩn danh. Xu hướng chung là ViAmpleHate hỗ trợ tốt nhất khi một target tường minh đi kèm một attack predicate, và kém nhất với những trường hợp thù ghét hàm ẩn, tức không nêu target nào và cũng không có từ attack lộ liễu.
 
-\begin{table}[tbp]
+\begin{table}[!t]
   \centering
   \small
   \begin{tabular}{p{0.34\linewidth}ccc}
@@ -371,41 +463,16 @@ Một yếu tố có thể góp phần là độ phủ target, tức tỷ lệ b
   \label{tab:qual}
 \end{table}
 
-% HÌNH 5 — Ma trận nhầm lẫn ViHSD: baseline so với đề xuất.
-\begin{figure*}[tp]
-  \centering
-  \includegraphics[width=0.45\linewidth]{image/figure4a.png}\hfill
-  \includegraphics[width=0.45\linewidth]{image/figure4b.png}
-  \caption{Confusion matrix trên ViHSD: AmpleHate baseline (trái) so với ViAmpleHate (phải). \texttt{confusion\_matrix\_amplehate.png} và \texttt{confusion\_matrix\_viamplehate.png}; lưu ý số false positive của lớp HATE giảm.}
-  \label{fig:cm}
-\end{figure*}
-
-\begin{table}[tbp]
-  \centering
-  \small
-  \setlength{\tabcolsep}{4pt}
-  \begin{tabular}{llrrr}
-    \toprule
-    \textbf{Dữ liệu} & \textbf{Lớp} & \textbf{P} & \textbf{R} & \textbf{F1} \\
-    \midrule
-    ViHSD & NON-HATE & 0.9541 & 0.9574 & 0.9558 \\
-    ViHSD & HATE     & 0.6177 & 0.5988 & 0.6081 \\
-    VOZ   & NON-HATE & 0.9638 & 0.9719 & 0.9678 \\
-    VOZ   & HATE     & 0.7347 & 0.6803 & 0.7065 \\
-    \bottomrule
-  \end{tabular}
-  \caption{Kết quả theo từng lớp của ViAmpleHate (tập test, một lần chạy).}
-  \label{tab:perclass}
-\end{table}
-
 \subsection{Thảo luận}
 Có ba điểm đáng chú ý. Thứ nhất, trên ViHSD, thay đổi chủ yếu là tái cân bằng precision/recall hơn là một mức tăng đồng đều: precision của HATE tăng ($0{,}5972\!\to\!0{,}6177$) trong khi recall \emph{giảm} ($0{,}6119\!\to\!0{,}5988$). Precision cao hơn có lợi khi cáo buộc nhầm là tốn kém, nhưng recall thấp hơn đồng nghĩa với bỏ sót nhiều hơn; lựa chọn điểm cân bằng phù hợp phụ thuộc vào bối cảnh triển khai. Nhóm chỉ báo cáo ở một threshold đơn và để dành phân tích precision--recall đầy đủ cho sau. Trên VOZ-HSD, nơi độ phủ cao hơn, recall của HATE cũng cao hơn (0,6803; Bảng~\ref{tab:perclass}). Thứ hai, mức tăng lớn hơn trên VOZ-HSD đi kèm accuracy giảm cho thấy mô hình đánh đổi accuracy của lớp đa số để cải thiện chất lượng ở lớp thiểu số, một đánh đổi thường phù hợp khi lớp thiểu số là trọng tâm. Thứ ba, quan hệ giữa độ phủ cue và mức cải thiện gợi mở một hướng nâng cấp ít tốn kém, đó là mở rộng và tinh chỉnh cue bank, dù vẫn cần kiểm chứng thêm (Mục~\ref{sec:coverage}).
+
+Xét từ góc độ triển khai, bức tranh theo từng lớp trong Bảng~\ref{tab:detail} có ý nghĩa hơn một con số tổng hợp đơn lẻ. Một hệ thống kiểm duyệt muốn hạn chế việc gắn nhãn HATE oan nên ưu tiên precision của HATE: ở tiêu chí này, ViAmpleHate là mô hình transformer mạnh nhất trên VOZ-HSD (0,73) và vẫn cạnh tranh trên ViHSD (0,62), trong khi baseline thiên về recall như BiLSTM sẽ tạo ra nhiều cáo buộc nhầm hơn hẳn. Ngược lại, một hệ thống muốn đưa càng nhiều trường hợp khả nghi ra cho người kiểm duyệt xem xét có thể chấp nhận chế độ precision thấp, recall cao của các baseline từ vựng; nhưng khi đó, ta chỉ cần hạ threshold đã tinh chỉnh trên validation (Phụ lục~\ref{sec:hparams}) để đánh đổi precision lấy recall trên chính mô hình đề xuất. Các thành phần thêm vào cũng nhẹ so với backbone PhoBERT---ba attention head gọn nhẹ, một gate, và một lượt khớp cue ở bước tiền xử lý---nên mức cải thiện gần như không kéo theo chi phí inference đáng kể; thậm chí, batched attention sau khi chỉnh sửa còn rẻ hơn cả công thức $B\times B$ giả tạo mà nó thay thế.
 
 \subsection{Phân tích lỗi}
 Nhóm chia các lỗi còn lại thành bảy nhóm thường gặp. \textbf{(1) Xúc phạm nhưng không phải thù ghét:} lời lăng mạ hoặc lời tục nhắm vào một cá nhân, không phải một nhóm được bảo vệ; khi mô hình đặt trọng số quá lớn vào attack cue, false positive dễ xuất hiện. \textbf{(2) Thù ghét hàm ẩn:} bình luận không có slur, thực thể có tên hay attack predicate lộ liễu, nhưng vẫn thể hiện thù địch qua mỉa mai, định kiến hoặc ngữ cảnh xã hội chung; lúc này việc trích cue gần như không tìm được tín hiệu để attend. \textbf{(3) Tham chiếu target mơ hồ:} đại từ và danh từ chỉ nhóm cũng xuất hiện trong bình luận trung tính hoặc hài hước, nên một target cue thiếu ngữ cảnh thù địch dễ khiến mô hình dự đoán nhầm thành HATE. \textbf{(4) Cue chưa phủ đủ:} tiếng lóng thay đổi nhanh, biến thể chính tả, viết tắt, lời tục sáng tạo hoặc bị kiểm duyệt là những hiện tượng mà cue bank cố định khó bao quát hết, dẫn tới false negative. \textbf{(5) Lệch token và span:} span của NER, kết quả tách từ và subword tokenization của PhoBERT có thể không trùng khớp, nhất là với các cụm nhiều từ, khiến cue đôi khi khớp sai vị trí. \textbf{(6) Nhạy cảm với threshold:} threshold tinh chỉnh trên validation có thể không còn phù hợp khi phân phối dữ liệu thay đổi. \textbf{(7) Mất cân bằng lớp:} khi số mẫu dương quá ít, lỗi ở lớp thiểu số vẫn dai dẳng dù đã dùng weighted loss và tinh chỉnh threshold. Các hướng khắc phục gồm mở rộng cue bank bằng khai thác dữ liệu có kiểm chứng thủ công, ghi log dự đoán theo từng mẫu (gate, độ phủ cue, confidence) để phân tích false positive/negative, bổ sung span supervision hoặc phát hiện mỉa mai, và áp dụng probability calibration.
 
 \section{Kết luận và hướng phát triển}
-ViAmpleHate thích ứng AmpleHate cho tiếng Việt thông qua trích xuất target tiếng Việt, tách riêng hai kênh target/attack cue, relation-bank attention và relation injection thích ứng (kèm một chỉnh sửa batched-attention ở mức triển khai), đồng thời huấn luyện bằng weighted cross-entropy kết hợp contrastive loss. Trên ViHSD và VOZ-HSD, mô hình cải thiện cả macro-F1 lẫn HATE-F1 so với baseline AmpleHate và các baseline TF-IDF, BiLSTM, PhoBERT-CNN, rõ nhất ở lớp thiểu số của VOZ-HSD; mức tăng trên ViHSD còn nhỏ và cần xác nhận lại bằng so sánh đa seed. Phân tích cho thấy các mức cải thiện gắn với độ phủ target, vốn được cue bank tiếng Việt nâng lên khoảng hai bậc độ lớn so với NER tiếng Anh; tuy nhiên, đây mới là liên hệ tương quan và chưa thể khẳng định nhân quả. Bài học rộng hơn là target-aware chỉ phát huy đầy đủ khi được thích ứng với hình thái bề mặt của ngôn ngữ đích. Hướng phát triển tiếp theo gồm tự động khai thác cue bank kèm kiểm chứng thủ công, phân tích lỗi ở mức từng mẫu, bổ sung span supervision và phát hiện mỉa mai, mở rộng sang thiết lập multi-label/multi-target theo tinh thần ViTHSD, và áp dụng probability calibration để ổn định hơn khi chuyển miền.
+ViAmpleHate thích ứng AmpleHate cho tiếng Việt thông qua trích xuất target tiếng Việt, tách riêng hai kênh target/attack cue, relation-bank attention và relation injection thích ứng (kèm một chỉnh sửa batched-attention ở mức triển khai), đồng thời huấn luyện bằng weighted cross-entropy kết hợp contrastive loss. Trên ViHSD và VOZ-HSD, mô hình cải thiện cả macro-F1 lẫn HATE-F1 so với baseline AmpleHate và các baseline TF-IDF, BiLSTM, PhoBERT-CNN, rõ nhất ở lớp thiểu số của VOZ-HSD; mức tăng trên ViHSD còn nhỏ và cần xác nhận lại bằng so sánh đa seed. Phân tích cho thấy các mức cải thiện gắn với độ phủ target, vốn được cue bank tiếng Việt nâng lên khoảng hai bậc độ lớn so với NER tiếng Anh; tuy nhiên, đây mới là liên hệ tương quan và chưa thể khẳng định nhân quả. Bài học rút ra ở tầm rộng hơn là target-aware chỉ phát huy hết giá trị khi được thích ứng với hình thái bề mặt của ngôn ngữ đích, nơi đối tượng bị nhắm tới thường là những cách gọi nhóm phi chính thức hơn là thực thể có tên. Hướng phát triển tiếp theo gồm tự động khai thác cue bank kèm kiểm chứng thủ công, phân tích lỗi ở mức từng mẫu, bổ sung span supervision và phát hiện mỉa mai, mở rộng sang thiết lập multi-label/multi-target theo tinh thần ViTHSD, và áp dụng probability calibration để ổn định hơn khi chuyển miền.
 
 % \section*{Lời cảm ơn}
 
@@ -434,7 +501,7 @@ ViAmpleHate thích ứng AmpleHate cho tiếng Việt thông qua trích xuất t
     Class weight $w_c$ & inverse freq.\ $N/(C\,n_c)$ \\
     Contrastive margin $m$ & 0.5 \\
     Label smoothing & 0.05 \\
-    Seed / số lần chạy & 42 / một lần chạy \\
+    Seed & 42 \\
     ViHSD best epoch / val F1 / thr. & 4 / 0.7852 / 0.43 \\
     \bottomrule
   \end{tabular}
