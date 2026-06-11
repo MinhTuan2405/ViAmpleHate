@@ -1,0 +1,116 @@
+\relax 
+\bibstyle{acl_natbib}
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\citation{amplehate}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Giới thiệu}{1}{section.1}\protected@file@percent }
+\citation{davidson2017,schmidt2017survey}
+\citation{elsherief2021latent}
+\citation{amplehate}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Công trình liên quan}{2}{section.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Phát hiện phát ngôn thù ghét và thù ghét hàm ẩn}{2}{subsection.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}AmpleHate}{2}{subsection.2.2}\protected@file@percent }
+\citation{vihsd}
+\citation{vithsd}
+\citation{phobert}
+\citation{roberta}
+\citation{bert}
+\citation{transformer}
+\citation{vncorenlp}
+\citation{to2022phobertcnn}
+\citation{supcon}
+\citation{vihsd}
+\citation{vozhsd}
+\citation{vihatet5}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Phát hiện phát ngôn thù ghét tiếng Việt}{3}{subsection.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}PhoBERT và các mô hình tiền huấn luyện tiếng Việt}{3}{subsection.2.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.5}Contrastive learning cho phân loại văn bản}{3}{subsection.2.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}Bộ dữ liệu}{3}{section.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}ViHSD}{3}{subsection.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}VOZ-HSD}{3}{subsection.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Gán nhãn nhị phân và tiền xử lý}{3}{subsection.3.3}\protected@file@percent }
+\newlabel{sec:reshape}{{3.3}{3}{Gán nhãn nhị phân và tiền xử lý}{subsection.3.3}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Thống kê bộ dữ liệu sau khi gán nhãn nhị phân. Lớp HATE chiếm $\approx $10\% ở mọi tập, nên macro-F1 và HATE-F1 phản ánh hiệu năng phù hợp hơn accuracy.}}{4}{table.caption.1}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{tab:data}{{1}{4}{Thống kê bộ dữ liệu sau khi gán nhãn nhị phân. Lớp HATE chiếm $\approx $10\% ở mọi tập, nên macro-F1 và HATE-F1 phản ánh hiệu năng phù hợp hơn accuracy}{table.caption.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Phân phối lớp của ViHSD và VOZ-HSD sau khi gán nhãn nhị phân.}}{4}{figure.caption.2}\protected@file@percent }
+\newlabel{fig:dist}{{1}{4}{Phân phối lớp của ViHSD và VOZ-HSD sau khi gán nhãn nhị phân}{figure.caption.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Xây dựng cue bank}{4}{subsection.3.4}\protected@file@percent }
+\newlabel{sec:cue}{{3.4}{4}{Xây dựng cue bank}{subsection.3.4}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Phương pháp}{4}{section.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Phát biểu bài toán}{4}{subsection.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Tiền xử lý văn bản}{4}{subsection.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Trích xuất đa tín hiệu target và attack}{4}{subsection.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}PhoBERT encoder}{4}{subsection.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Relation-bank attention}{4}{subsection.4.5}\protected@file@percent }
+\citation{muller2019labelsmoothing}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Kiến trúc tổng thể của ViAmpleHate. Bình luận được chuẩn hóa, tách từ và mã hóa bằng PhoBERT thành các hidden state $H=[h_0,\dots  ,h_n]$, trong đó $h_0$ là biểu diễn [CLS] toàn cục. NER tiếng Việt và target-cue bank tạo ra tập chỉ số target $T_x$, còn attack-cue bank tạo ra $A_x$ (fallback về [CLS] khi một tập rỗng). Relation-bank attention gồm ba kênh theo từng mẫu---target tường minh ($r_{\mathrm  {exp}}$), context hàm ẩn ($r_{\mathrm  {imp}}$) và attack ($r_{\mathrm  {atk}}$)---được fuse thành một relation vector duy nhất $r$ rồi inject vào $h_0$ qua instance-adaptive gate ($g=\sigma (W_g[h_0;r])$, $z=h_0+g\,r$). Linear classifier với threshold được tinh chỉnh trên tập validation cho ra quyết định NON-HATE/HATE; quá trình huấn luyện cực tiểu hóa $L=L_{\mathrm  {CE}}+\alpha L_{\mathrm  {CL}}$.}}{5}{figure.caption.3}\protected@file@percent }
+\newlabel{fig:arch}{{2}{5}{Kiến trúc tổng thể của ViAmpleHate. Bình luận được chuẩn hóa, tách từ và mã hóa bằng PhoBERT thành các hidden state $H=[h_0,\dots ,h_n]$, trong đó $h_0$ là biểu diễn [CLS] toàn cục. NER tiếng Việt và target-cue bank tạo ra tập chỉ số target $T_x$, còn attack-cue bank tạo ra $A_x$ (fallback về [CLS] khi một tập rỗng). Relation-bank attention gồm ba kênh theo từng mẫu---target tường minh ($r_{\mathrm {exp}}$), context hàm ẩn ($r_{\mathrm {imp}}$) và attack ($r_{\mathrm {atk}}$)---được fuse thành một relation vector duy nhất $r$ rồi inject vào $h_0$ qua instance-adaptive gate ($g=\sigma (W_g[h_0;r])$, $z=h_0+g\,r$). Linear classifier với threshold được tinh chỉnh trên tập validation cho ra quyết định NON-HATE/HATE; quá trình huấn luyện cực tiểu hóa $L=L_{\mathrm {CE}}+\alpha L_{\mathrm {CL}}$}{figure.caption.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.6}Batched attention}{5}{subsection.4.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.7}Instance-adaptive relation gate}{5}{subsection.4.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.8}Hàm mục tiêu huấn luyện}{5}{subsection.4.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.9}Inference và chọn threshold}{5}{subsection.4.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.10}Cân nhắc tính toán}{5}{subsection.4.10}\protected@file@percent }
+\citation{fasttext}
+\citation{hochreiter1997lstm}
+\citation{to2022phobertcnn}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Thực nghiệm}{6}{section.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Các baseline}{6}{subsection.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Chi tiết triển khai}{6}{subsection.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Độ đo đánh giá}{6}{subsection.5.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Đường cong training/validation của ViAmpleHate trên ViHSD (best epoch 4, macro-F1 trên validation $=0,7852$). \texttt  {training\_curves\_viamplehate.png}.}}{6}{figure.caption.5}\protected@file@percent }
+\newlabel{fig:curves}{{3}{6}{Đường cong training/validation của ViAmpleHate trên ViHSD (best epoch 4, macro-F1 trên validation $=0,7852$). \texttt {training\_curves\_viamplehate.png}}{figure.caption.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Thiết kế thực nghiệm}{6}{subsection.5.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Kết quả và phân tích lỗi}{6}{section.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Kết quả chính}{6}{subsection.6.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces So sánh kiến trúc và cấu hình giữa baseline và mô hình đề xuất.}}{7}{table.caption.4}\protected@file@percent }
+\newlabel{tab:arch}{{2}{7}{So sánh kiến trúc và cấu hình giữa baseline và mô hình đề xuất}{table.caption.4}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Kết quả trên tập test ViHSD. AmpleHate là baseline, $\Delta $ là chênh lệch của ViAmpleHate. Giá trị tốt nhất mỗi cột in đậm (accuracy chỉ để tham khảo).}}{7}{table.caption.6}\protected@file@percent }
+\newlabel{tab:vihsd}{{3}{7}{Kết quả trên tập test ViHSD. AmpleHate là baseline, $\Delta $ là chênh lệch của ViAmpleHate. Giá trị tốt nhất mỗi cột in đậm (accuracy chỉ để tham khảo)}{table.caption.6}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Kết quả trên tập test VOZ-HSD. Giá trị tốt nhất mỗi cột in đậm (accuracy chỉ để tham khảo; baseline có accuracy cao nhất).}}{7}{table.caption.7}\protected@file@percent }
+\newlabel{tab:voz}{{4}{7}{Kết quả trên tập test VOZ-HSD. Giá trị tốt nhất mỗi cột in đậm (accuracy chỉ để tham khảo; baseline có accuracy cao nhất)}{table.caption.7}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Kết quả chi tiết theo từng lớp}{7}{subsection.6.2}\protected@file@percent }
+\newlabel{sec:detailed}{{6.2}{7}{Kết quả chi tiết theo từng lớp}{subsection.6.2}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Báo cáo phân loại chi tiết theo từng lớp trên ViHSD (a) và VOZ-HSD (b), tập test. Macro-F1 là độ đo chính; dòng ViAmpleHate in đậm để làm nổi bật (không phải dấu hiệu tốt nhất theo cột). Precision/recall theo lớp lấy hai chữ số thập phân, còn F1 và macro-F1 lấy bốn chữ số.}}{8}{table.caption.8}\protected@file@percent }
+\newlabel{tab:detail}{{5}{8}{Báo cáo phân loại chi tiết theo từng lớp trên ViHSD (a) và VOZ-HSD (b), tập test. Macro-F1 là độ đo chính; dòng ViAmpleHate in đậm để làm nổi bật (không phải dấu hiệu tốt nhất theo cột). Precision/recall theo lớp lấy hai chữ số thập phân, còn F1 và macro-F1 lấy bốn chữ số}{table.caption.8}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Confusion matrix trên ViHSD: AmpleHate baseline (trái) so với ViAmpleHate (phải). \texttt  {confusion\_matrix\_amplehate.png} và \texttt  {confusion\_matrix\_viamplehate.png}; lưu ý số false positive của lớp HATE giảm.}}{8}{figure.caption.10}\protected@file@percent }
+\newlabel{fig:cm}{{4}{8}{Confusion matrix trên ViHSD: AmpleHate baseline (trái) so với ViAmpleHate (phải). \texttt {confusion\_matrix\_amplehate.png} và \texttt {confusion\_matrix\_viamplehate.png}; lưu ý số false positive của lớp HATE giảm}{figure.caption.10}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Kết quả theo từng lớp của ViAmpleHate (tập test).}}{8}{table.caption.9}\protected@file@percent }
+\newlabel{tab:perclass}{{6}{8}{Kết quả theo từng lớp của ViAmpleHate (tập test)}{table.caption.9}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Tác động của trích xuất target tiếng Việt}{8}{subsection.6.3}\protected@file@percent }
+\newlabel{sec:coverage}{{6.3}{8}{Tác động của trích xuất target tiếng Việt}{subsection.6.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Phân tích định tính}{9}{subsection.6.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.5}Thảo luận}{9}{subsection.6.5}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces Các trường hợp minh họa (ví dụ dựng lại; nên thay bằng ví dụ thực). Tgt/Atk = có hiện diện target/attack cue.}}{9}{table.caption.11}\protected@file@percent }
+\newlabel{tab:qual}{{7}{9}{Các trường hợp minh họa (ví dụ dựng lại; nên thay bằng ví dụ thực). Tgt/Atk = có hiện diện target/attack cue}{table.caption.11}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.6}Phân tích lỗi}{9}{subsection.6.6}\protected@file@percent }
+\bibdata{custom}
+\bibcite{fasttext}{{1}{2017}{{Bojanowski et~al.}}{{Bojanowski, Grave, Joulin, and Mikolov}}}
+\bibcite{davidson2017}{{2}{2017}{{Davidson et~al.}}{{Davidson, Warmsley, Macy, and Weber}}}
+\bibcite{bert}{{3}{2019}{{Devlin et~al.}}{{Devlin, Chang, Lee, and Toutanova}}}
+\bibcite{elsherief2021latent}{{4}{2021}{{ElSherief et~al.}}{{ElSherief, Ziems, Muchlinski, Anupindi, Seybolt, De~Choudhury, and Yang}}}
+\bibcite{hochreiter1997lstm}{{5}{1997}{{Hochreiter and Schmidhuber}}{{}}}
+\bibcite{supcon}{{6}{2020}{{Khosla et~al.}}{{Khosla, Teterwak, Wang, Sarna, Tian, Isola, Maschinot, Liu, and Krishnan}}}
+\bibcite{amplehate}{{7}{2025}{{Lee et~al.}}{{Lee, Hahn, Ahn, and Han}}}
+\bibcite{roberta}{{8}{2019}{{Liu et~al.}}{{Liu, Ott, Goyal, Du, Joshi, Chen, Levy, Lewis, Zettlemoyer, and Stoyanov}}}
+\bibcite{vihsd}{{9}{2021}{{Luu et~al.}}{{Luu, Nguyen, and Nguyen}}}
+\bibcite{muller2019labelsmoothing}{{10}{2019}{{M{\"u}ller et~al.}}{{M{\"u}ller, Kornblith, and Hinton}}}
+\bibcite{phobert}{{11}{2020}{{Nguyen and Nguyen}}{{}}}
+\bibcite{schmidt2017survey}{{12}{2017}{{Schmidt and Wiegand}}{{}}}
+\bibcite{vihatet5}{{13}{2024{a}}{{Thanh~Nguyen}}{{}}}
+\@writefile{toc}{\contentsline {section}{\numberline {7}Kết luận và hướng phát triển}{10}{section.7}\protected@file@percent }
+\bibcite{vozhsd}{{14}{2024{b}}{{Thanh~Nguyen}}{{}}}
+\bibcite{to2022phobertcnn}{{15}{2023}{{Tran et~al.}}{{Tran, Nguyen, Hoang, Luu, Do, and Nguyen}}}
+\bibcite{transformer}{{16}{2017}{{Vaswani et~al.}}{{Vaswani, Shazeer, Parmar, Uszkoreit, Jones, Gomez, Kaiser, and Polosukhin}}}
+\bibcite{vithsd}{{17}{2025}{{Vo et~al.}}{{Vo, Huynh, Luu, and Do}}}
+\bibcite{vncorenlp}{{18}{2018}{{Vu et~al.}}{{Vu, Nguyen, Nguyen, Dras, and Johnson}}}
+\@writefile{toc}{\contentsline {section}{\numberline {A}Hyperparameters}{11}{appendix.A}\protected@file@percent }
+\newlabel{sec:hparams}{{A}{11}{Hyperparameters}{appendix.A}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {8}{\ignorespaces Toàn bộ siêu tham số.}}{11}{table.caption.13}\protected@file@percent }
+\newlabel{tab:hparams}{{8}{11}{Toàn bộ siêu tham số}{table.caption.13}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {B}Ví dụ cue bank}{11}{appendix.B}\protected@file@percent }
+\newlabel{sec:cuebank}{{B}{11}{Ví dụ cue bank}{appendix.B}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {C}Khả năng tái lập}{11}{appendix.C}\protected@file@percent }
+\newlabel{sec:repro}{{C}{11}{Khả năng tái lập}{appendix.C}{}}
+\gdef \@abspage@last{11}

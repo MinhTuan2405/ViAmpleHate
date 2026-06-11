@@ -1,0 +1,142 @@
+\begin{thebibliography}{18}
+\providecommand{\natexlab}[1]{#1}
+
+\bibitem[{Bojanowski et~al.(2017)Bojanowski, Grave, Joulin, and
+  Mikolov}]{fasttext}
+Piotr Bojanowski, Edouard Grave, Armand Joulin, and Tomas Mikolov. 2017.
+\newblock Enriching word vectors with subword information.
+\newblock \emph{Transactions of the Association for Computational Linguistics},
+  5:135--146.
+
+\bibitem[{Davidson et~al.(2017)Davidson, Warmsley, Macy, and
+  Weber}]{davidson2017}
+Thomas Davidson, Dana Warmsley, Michael Macy, and Ingmar Weber. 2017.
+\newblock \href {https://doi.org/10.1609/icwsm.v11i1.14955} {Automated hate
+  speech detection and the problem of offensive language}.
+\newblock In \emph{Proceedings of the 11th International AAAI Conference on Web
+  and Social Media (ICWSM)}, pages 512--515.
+
+\bibitem[{Devlin et~al.(2019)Devlin, Chang, Lee, and Toutanova}]{bert}
+Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. 2019.
+\newblock {BERT}: Pre-training of deep bidirectional transformers for language
+  understanding.
+\newblock In \emph{Proceedings of NAACL-HLT}, pages 4171--4186.
+
+\bibitem[{ElSherief et~al.(2021)ElSherief, Ziems, Muchlinski, Anupindi,
+  Seybolt, De~Choudhury, and Yang}]{elsherief2021latent}
+Mai ElSherief, Caleb Ziems, David Muchlinski, Vaishnavi Anupindi, Jordyn
+  Seybolt, Munmun De~Choudhury, and Diyi Yang. 2021.
+\newblock \href {https://doi.org/10.18653/v1/2021.emnlp-main.29} {Latent
+  hatred: A benchmark for understanding implicit hate speech}.
+\newblock In \emph{Proceedings of the 2021 Conference on Empirical Methods in
+  Natural Language Processing (EMNLP)}, pages 345--363.
+
+\bibitem[{Hochreiter and Schmidhuber(1997)}]{hochreiter1997lstm}
+Sepp Hochreiter and J{\"u}rgen Schmidhuber. 1997.
+\newblock \href {https://doi.org/10.1162/neco.1997.9.8.1735} {Long short-term
+  memory}.
+\newblock \emph{Neural Computation}, 9(8):1735--1780.
+
+\bibitem[{Khosla et~al.(2020)Khosla, Teterwak, Wang, Sarna, Tian, Isola,
+  Maschinot, Liu, and Krishnan}]{supcon}
+Prannay Khosla, Piotr Teterwak, Chen Wang, Aaron Sarna, Yonglong Tian, Phillip
+  Isola, Aaron Maschinot, Ce~Liu, and Dilip Krishnan. 2020.
+\newblock Supervised contrastive learning.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}.
+
+\bibitem[{Lee et~al.(2025)Lee, Hahn, Ahn, and Han}]{amplehate}
+Yejin Lee, Joonghyuk Hahn, Hyeseon Ahn, and Yo-Sub Han. 2025.
+\newblock \href {https://doi.org/10.18653/v1/2025.emnlp-main.1469}
+  {{AmpleHate}: Amplifying the attention for versatile implicit hate
+  detection}.
+\newblock In \emph{Proceedings of the 2025 Conference on Empirical Methods in
+  Natural Language Processing}, pages 28862--28874, Suzhou, China. Association
+  for Computational Linguistics.
+
+\bibitem[{Liu et~al.(2019)Liu, Ott, Goyal, Du, Joshi, Chen, Levy, Lewis,
+  Zettlemoyer, and Stoyanov}]{roberta}
+Yinhan Liu, Myle Ott, Naman Goyal, Jingfei Du, Mandar Joshi, Danqi Chen, Omer
+  Levy, Mike Lewis, Luke Zettlemoyer, and Veselin Stoyanov. 2019.
+\newblock \href {https://arxiv.org/abs/1907.11692} {{RoBERTa}: A robustly
+  optimized {BERT} pretraining approach}.
+\newblock \emph{arXiv preprint arXiv:1907.11692}.
+
+\bibitem[{Luu et~al.(2021)Luu, Nguyen, and Nguyen}]{vihsd}
+Son~T. Luu, Kiet~Van Nguyen, and Ngan Luu-Thuy Nguyen. 2021.
+\newblock \href {https://doi.org/10.1007/978-3-030-79457-6_35} {A large-scale
+  dataset for hate speech detection on vietnamese social media texts}.
+\newblock In \emph{Advances and Trends in Artificial Intelligence. Artificial
+  Intelligence Practices}, volume 12798 of \emph{Lecture Notes in Computer
+  Science}, pages 415--426, Cham. Springer.
+
+\bibitem[{M{\"u}ller et~al.(2019)M{\"u}ller, Kornblith, and
+  Hinton}]{muller2019labelsmoothing}
+Rafael M{\"u}ller, Simon Kornblith, and Geoffrey~E. Hinton. 2019.
+\newblock \href {https://arxiv.org/abs/1906.02629} {When does label smoothing
+  help?}
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}.
+
+\bibitem[{Nguyen and Nguyen(2020)}]{phobert}
+Dat~Quoc Nguyen and Anh~Tuan Nguyen. 2020.
+\newblock {PhoBERT}: Pre-trained language models for {V}ietnamese.
+\newblock In \emph{Findings of the Association for Computational Linguistics:
+  EMNLP 2020}, pages 1037--1042.
+
+\bibitem[{Schmidt and Wiegand(2017)}]{schmidt2017survey}
+Anna Schmidt and Michael Wiegand. 2017.
+\newblock \href {https://doi.org/10.18653/v1/W17-1101} {A survey on hate speech
+  detection using natural language processing}.
+\newblock In \emph{Proceedings of the Fifth International Workshop on Natural
+  Language Processing for Social Media}, pages 1--10.
+
+\bibitem[{Thanh~Nguyen(2024{\natexlab{a}})}]{vihatet5}
+Luan Thanh~Nguyen. 2024{\natexlab{a}}.
+\newblock \href {https://doi.org/10.18653/v1/2024.findings-acl.355}
+  {{ViHateT5}: Enhancing hate speech detection in vietnamese with a unified
+  text-to-text transformer model}.
+\newblock In \emph{Findings of the Association for Computational Linguistics:
+  ACL 2024}, pages 5948--5961, Bangkok, Thailand. Association for Computational
+  Linguistics.
+
+\bibitem[{Thanh~Nguyen(2024{\natexlab{b}})}]{vozhsd}
+Luan Thanh~Nguyen. 2024{\natexlab{b}}.
+\newblock \href {https://huggingface.co/datasets/tarudesu/VOZ-HSD} {{VOZ-HSD}:
+  A hate speech detection dataset from the voz forum}.
+\newblock Hugging Face dataset.
+\newblock Dataset released with the paper ViHateT5: Enhancing Hate Speech
+  Detection in Vietnamese with a Unified Text-to-Text Transformer Model.
+
+\bibitem[{Tran et~al.(2023)Tran, Nguyen, Hoang, Luu, Do, and
+  Nguyen}]{to2022phobertcnn}
+Khanh~Quoc Tran, An~Trong Nguyen, Phu~Gia Hoang, Canh~Duc Luu, Trong-Hop Do,
+  and Kiet~Van Nguyen. 2023.
+\newblock \href {https://doi.org/10.1007/s00521-022-07745-w} {{V}ietnamese hate
+  and offensive detection using {PhoBERT-CNN} and social media streaming data}.
+\newblock \emph{Neural Computing and Applications}, 35(1):573--594.
+
+\bibitem[{Vaswani et~al.(2017)Vaswani, Shazeer, Parmar, Uszkoreit, Jones,
+  Gomez, Kaiser, and Polosukhin}]{transformer}
+Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones,
+  Aidan~N. Gomez, {\L}ukasz Kaiser, and Illia Polosukhin. 2017.
+\newblock \href {https://arxiv.org/abs/1706.03762} {Attention is all you need}.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}, pages 5998--6008.
+
+\bibitem[{Vo et~al.(2025)Vo, Huynh, Luu, and Do}]{vithsd}
+Cuong~Nhat Vo, Khanh~Bao Huynh, Son~T. Luu, and Trong-Hop Do. 2025.
+\newblock \href {https://doi.org/10.1007/s42001-024-00348-6} {{ViTHSD}:
+  Exploiting hatred by targets for hate speech detection on vietnamese social
+  media texts}.
+\newblock \emph{Journal of Computational Social Science}, 8(2):30.
+
+\bibitem[{Vu et~al.(2018)Vu, Nguyen, Nguyen, Dras, and Johnson}]{vncorenlp}
+Thanh Vu, Dat~Quoc Nguyen, Dai~Quoc Nguyen, Mark Dras, and Mark Johnson. 2018.
+\newblock \href {https://doi.org/10.18653/v1/N18-5012} {{VnCoreNLP}: A
+  {V}ietnamese natural language processing toolkit}.
+\newblock In \emph{Proceedings of the 2018 Conference of the North American
+  Chapter of the Association for Computational Linguistics: Demonstrations
+  (NAACL-HLT)}, pages 56--60.
+
+\end{thebibliography}

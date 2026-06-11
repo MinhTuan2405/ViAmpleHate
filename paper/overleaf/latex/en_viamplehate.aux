@@ -1,0 +1,116 @@
+\relax 
+\bibstyle{acl_natbib}
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\citation{amplehate}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}{section.1}\protected@file@percent }
+\citation{davidson2017,schmidt2017survey}
+\citation{elsherief2021latent}
+\citation{amplehate}
+\citation{vihsd}
+\citation{vithsd}
+\citation{phobert}
+\citation{roberta}
+\citation{bert}
+\citation{transformer}
+\citation{vncorenlp}
+\citation{to2022phobertcnn}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Related Work}{2}{section.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Hate speech detection and implicit hate}{2}{subsection.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}AmpleHate}{2}{subsection.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Vietnamese hate speech detection}{2}{subsection.2.3}\protected@file@percent }
+\citation{supcon}
+\citation{vihsd}
+\citation{vozhsd}
+\citation{vihatet5}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}PhoBERT and Vietnamese pretrained models}{3}{subsection.2.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.5}Contrastive learning for text classification}{3}{subsection.2.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}Datasets}{3}{section.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}ViHSD}{3}{subsection.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}VOZ-HSD}{3}{subsection.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Binary relabeling and preprocessing}{3}{subsection.3.3}\protected@file@percent }
+\newlabel{sec:reshape}{{3.3}{3}{Binary relabeling and preprocessing}{subsection.3.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Cue bank construction}{3}{subsection.3.4}\protected@file@percent }
+\newlabel{sec:cue}{{3.4}{3}{Cue bank construction}{subsection.3.4}{}}
+\citation{muller2019labelsmoothing}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Dataset statistics after binary relabeling. HATE is $\approx $10\% throughout, so macro-F1/HATE-F1 matter more than accuracy.}}{4}{table.caption.1}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{tab:data}{{1}{4}{Dataset statistics after binary relabeling. HATE is $\approx $10\% throughout, so macro-F1/HATE-F1 matter more than accuracy}{table.caption.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Class distribution of ViHSD and VOZ-HSD after binary relabeling.}}{4}{figure.caption.2}\protected@file@percent }
+\newlabel{fig:dist}{{1}{4}{Class distribution of ViHSD and VOZ-HSD after binary relabeling}{figure.caption.2}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Methodology}{4}{section.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Problem formulation}{4}{subsection.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Text preprocessing}{4}{subsection.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Multi-signal target and attack extraction}{4}{subsection.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}PhoBERT encoder}{4}{subsection.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Relation-bank attention}{4}{subsection.4.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.6}Batched attention}{4}{subsection.4.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.7}Instance-adaptive relation gate}{4}{subsection.4.7}\protected@file@percent }
+\citation{fasttext}
+\citation{hochreiter1997lstm}
+\citation{to2022phobertcnn}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Overall architecture of ViAmpleHate. The comment is normalized, word-segmented, and encoded by PhoBERT into hidden states $H=[h_0,\dots  ,h_n]$, with $h_0$ the [CLS] (global) representation. Vietnamese NER and a target-cue bank produce the target index set $T_x$, while an attack-cue bank produces $A_x$ (falling back to [CLS] when a set is empty). A relation-bank attention with three per-sample channels---explicit target ($r_{\mathrm  {exp}}$), implicit context ($r_{\mathrm  {imp}}$), and attack ($r_{\mathrm  {atk}}$)---is fused into a single relation vector $r$ and injected into $h_0$ through an instance-adaptive gate ($g=\sigma (W_g[h_0;r])$, $z=h_0+g\,r$). A linear classifier with a validation-tuned threshold yields the NON-HATE/HATE decision; training minimizes $L=L_{\mathrm  {CE}}+\alpha L_{\mathrm  {CL}}$.}}{5}{figure.caption.3}\protected@file@percent }
+\newlabel{fig:arch}{{2}{5}{Overall architecture of ViAmpleHate. The comment is normalized, word-segmented, and encoded by PhoBERT into hidden states $H=[h_0,\dots ,h_n]$, with $h_0$ the [CLS] (global) representation. Vietnamese NER and a target-cue bank produce the target index set $T_x$, while an attack-cue bank produces $A_x$ (falling back to [CLS] when a set is empty). A relation-bank attention with three per-sample channels---explicit target ($r_{\mathrm {exp}}$), implicit context ($r_{\mathrm {imp}}$), and attack ($r_{\mathrm {atk}}$)---is fused into a single relation vector $r$ and injected into $h_0$ through an instance-adaptive gate ($g=\sigma (W_g[h_0;r])$, $z=h_0+g\,r$). A linear classifier with a validation-tuned threshold yields the NON-HATE/HATE decision; training minimizes $L=L_{\mathrm {CE}}+\alpha L_{\mathrm {CL}}$}{figure.caption.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.8}Training objective}{5}{subsection.4.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.9}Inference and threshold selection}{5}{subsection.4.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.10}Computational considerations}{5}{subsection.4.10}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Experiments}{5}{section.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Baselines}{5}{subsection.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Implementation details}{5}{subsection.5.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Architecture and configuration comparison between the baseline and the proposed model.}}{6}{table.caption.4}\protected@file@percent }
+\newlabel{tab:arch}{{2}{6}{Architecture and configuration comparison between the baseline and the proposed model}{table.caption.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Evaluation metrics}{6}{subsection.5.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Experimental design}{6}{subsection.5.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Results and Error Analysis}{6}{section.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Main results}{6}{subsection.6.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Training/validation curves of ViAmpleHate on ViHSD (best epoch 4, val macro-F1 $=0.7852$). \texttt  {training\_curves\_viamplehate.png}.}}{6}{figure.caption.5}\protected@file@percent }
+\newlabel{fig:curves}{{3}{6}{Training/validation curves of ViAmpleHate on ViHSD (best epoch 4, val macro-F1 $=0.7852$). \texttt {training\_curves\_viamplehate.png}}{figure.caption.5}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Results on ViHSD (test). Best per column in bold (accuracy shown for reference).}}{6}{table.caption.6}\protected@file@percent }
+\newlabel{tab:vihsd}{{3}{6}{Results on ViHSD (test). Best per column in bold (accuracy shown for reference)}{table.caption.6}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Results on VOZ-HSD (test). Best per column in bold among models (accuracy shown for reference; the baseline has the highest accuracy).}}{6}{table.caption.7}\protected@file@percent }
+\newlabel{tab:voz}{{4}{6}{Results on VOZ-HSD (test). Best per column in bold among models (accuracy shown for reference; the baseline has the highest accuracy)}{table.caption.7}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Detailed per-class results}{7}{subsection.6.2}\protected@file@percent }
+\newlabel{sec:detailed}{{6.2}{7}{Detailed per-class results}{subsection.6.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Effect of Vietnamese target extraction}{7}{subsection.6.3}\protected@file@percent }
+\newlabel{sec:coverage}{{6.3}{7}{Effect of Vietnamese target extraction}{subsection.6.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Qualitative analysis}{7}{subsection.6.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.5}Discussion}{7}{subsection.6.5}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Detailed per-class classification report on ViHSD (a) and VOZ-HSD (b), test sets. Macro-F1 is the primary metric and the proposed ViAmpleHate row is highlighted in bold for emphasis (not a per-column best marker). Per-class precision/recall are at the two-decimal resolution of the classifier reports; F1 and macro-F1 at four decimals.}}{8}{table.caption.8}\protected@file@percent }
+\newlabel{tab:detail}{{5}{8}{Detailed per-class classification report on ViHSD (a) and VOZ-HSD (b), test sets. Macro-F1 is the primary metric and the proposed ViAmpleHate row is highlighted in bold for emphasis (not a per-column best marker). Per-class precision/recall are at the two-decimal resolution of the classifier reports; F1 and macro-F1 at four decimals}{table.caption.8}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Confusion matrices on ViHSD: baseline AmpleHate (left) vs ViAmpleHate (right). \texttt  {confusion\_matrix\_amplehate.png} and \texttt  {confusion\_matrix\_viamplehate.png}; note the reduction in HATE false positives.}}{8}{figure.caption.10}\protected@file@percent }
+\newlabel{fig:cm}{{4}{8}{Confusion matrices on ViHSD: baseline AmpleHate (left) vs ViAmpleHate (right). \texttt {confusion\_matrix\_amplehate.png} and \texttt {confusion\_matrix\_viamplehate.png}; note the reduction in HATE false positives}{figure.caption.10}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Per-class results of ViAmpleHate (test set).}}{8}{table.caption.9}\protected@file@percent }
+\newlabel{tab:perclass}{{6}{8}{Per-class results of ViAmpleHate (test set)}{table.caption.9}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces Illustrative cases (constructed; replace with real examples). Tgt/Atk = target/attack cue present.}}{8}{table.caption.11}\protected@file@percent }
+\newlabel{tab:qual}{{7}{8}{Illustrative cases (constructed; replace with real examples). Tgt/Atk = target/attack cue present}{table.caption.11}{}}
+\bibdata{custom}
+\bibcite{fasttext}{{1}{2017}{{Bojanowski et~al.}}{{Bojanowski, Grave, Joulin, and Mikolov}}}
+\bibcite{davidson2017}{{2}{2017}{{Davidson et~al.}}{{Davidson, Warmsley, Macy, and Weber}}}
+\bibcite{bert}{{3}{2019}{{Devlin et~al.}}{{Devlin, Chang, Lee, and Toutanova}}}
+\bibcite{elsherief2021latent}{{4}{2021}{{ElSherief et~al.}}{{ElSherief, Ziems, Muchlinski, Anupindi, Seybolt, De~Choudhury, and Yang}}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {6.6}Error analysis}{9}{subsection.6.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {7}Conclusion and Future Work}{9}{section.7}\protected@file@percent }
+\bibcite{hochreiter1997lstm}{{5}{1997}{{Hochreiter and Schmidhuber}}{{}}}
+\bibcite{supcon}{{6}{2020}{{Khosla et~al.}}{{Khosla, Teterwak, Wang, Sarna, Tian, Isola, Maschinot, Liu, and Krishnan}}}
+\bibcite{amplehate}{{7}{2025}{{Lee et~al.}}{{Lee, Hahn, Ahn, and Han}}}
+\bibcite{roberta}{{8}{2019}{{Liu et~al.}}{{Liu, Ott, Goyal, Du, Joshi, Chen, Levy, Lewis, Zettlemoyer, and Stoyanov}}}
+\bibcite{vihsd}{{9}{2021}{{Luu et~al.}}{{Luu, Nguyen, and Nguyen}}}
+\bibcite{muller2019labelsmoothing}{{10}{2019}{{M{\"u}ller et~al.}}{{M{\"u}ller, Kornblith, and Hinton}}}
+\bibcite{phobert}{{11}{2020}{{Nguyen and Nguyen}}{{}}}
+\bibcite{schmidt2017survey}{{12}{2017}{{Schmidt and Wiegand}}{{}}}
+\bibcite{vihatet5}{{13}{2024{a}}{{Thanh~Nguyen}}{{}}}
+\bibcite{vozhsd}{{14}{2024{b}}{{Thanh~Nguyen}}{{}}}
+\bibcite{to2022phobertcnn}{{15}{2023}{{Tran et~al.}}{{Tran, Nguyen, Hoang, Luu, Do, and Nguyen}}}
+\bibcite{transformer}{{16}{2017}{{Vaswani et~al.}}{{Vaswani, Shazeer, Parmar, Uszkoreit, Jones, Gomez, Kaiser, and Polosukhin}}}
+\bibcite{vithsd}{{17}{2025}{{Vo et~al.}}{{Vo, Huynh, Luu, and Do}}}
+\bibcite{vncorenlp}{{18}{2018}{{Vu et~al.}}{{Vu, Nguyen, Nguyen, Dras, and Johnson}}}
+\@writefile{toc}{\contentsline {section}{\numberline {A}Hyperparameters}{10}{appendix.A}\protected@file@percent }
+\newlabel{sec:hparams}{{A}{10}{Hyperparameters}{appendix.A}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {8}{\ignorespaces Full hyperparameters.}}{10}{table.caption.13}\protected@file@percent }
+\newlabel{tab:hparams}{{8}{10}{Full hyperparameters}{table.caption.13}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {B}Cue Bank Examples}{10}{appendix.B}\protected@file@percent }
+\newlabel{sec:cuebank}{{B}{10}{Cue Bank Examples}{appendix.B}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {C}Reproducibility}{11}{appendix.C}\protected@file@percent }
+\newlabel{sec:repro}{{C}{11}{Reproducibility}{appendix.C}{}}
+\gdef \@abspage@last{11}

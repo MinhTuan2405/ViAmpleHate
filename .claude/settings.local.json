@@ -10,7 +10,9 @@
       "Bash(python -c ' *)",
       "Bash(command -v pdflatex)",
       "Bash(command -v lualatex)",
-      "Bash(command -v xelatex)"
+      "Bash(command -v xelatex)",
+      "Bash(pdflatex --version)",
+      "Bash(xelatex --version)"
     ]
   }
 }
