@@ -79,7 +79,11 @@ ViAmpleHate/
 │       │   ├── ViHSD - Baseline TF-IDF LR_SVM/
 │       │   ├── ViHSD - Baseline BiLSTM_FasttextVi/
 │       │   ├── ViHSD - Baseline PhoBERT_CNN/
+│       │   ├── ViHSD - Baseline ViSoBERT/
+│       │   ├── ViHSD - Baseline CafeBERT/
 │       │   ├── ViHSD - Baseline AmpleHate_PhoBERT/
+│       │   ├── VOZ-HSD - Baseline ViSoBERT/
+│       │   ├── VOZ-HSD - Baseline CafeBERT/
 │       │   └── VOZ-HSD - Baseline .../
 │       └── proposed/
 │           ├── ViHSD - Proposed ViAmpleHate_PhoBERT/
@@ -154,6 +158,8 @@ Notes:
 
 Each model is implemented in a separate notebook under `notebooks/models/`.
 
+Baselines include TF-IDF classifiers, BiLSTM + fastText, PhoBERT-CNN, AmpleHate-PhoBERT, ViSoBERT, and CafeBERT.
+
 ```text
 notebooks/models/baselines/<DATASET> - Baseline <MODEL>/
 notebooks/models/proposed/<DATASET> - Proposed ViAmpleHate_PhoBERT/
@@ -179,6 +185,8 @@ The app loads checkpoints from `notebooks/models/**/output/`. If a checkpoint or
 
 All numbers below come from a single run with seed 42. The comparison is between the full proposed system and each baseline at its own intended configuration, not a per-component ablation.
 
+ViSoBERT and CafeBERT are plain fine-tuning baselines using the encoder `[CLS]` representation plus a linear classifier.
+
 ### ViHSD Test
 
 | Model | Accuracy | Macro-F1 | HATE-F1 |
@@ -187,8 +195,10 @@ All numbers below come from a single run with seed 42. The comparison is between
 | TF-IDF + SVM | 0.9126 | 0.7131 | 0.4739 |
 | BiLSTM + fastText | 0.8454 | 0.7072 | 0.5060 |
 | PhoBERT-CNN | 0.8945 | 0.7571 | 0.5745 |
+| ViSoBERT | 0.9169 | 0.7672 | 0.5805 |
+| CafeBERT | **0.9217** | **0.7885** | **0.6207** |
 | AmpleHate | 0.9175 | 0.7792 | 0.6045 |
-| **ViAmpleHate** | **0.9205** | **0.7819** | **0.6081** |
+| ViAmpleHate | 0.9205 | 0.7819 | 0.6081 |
 | Delta vs. AmpleHate | +0.0030 | +0.0027 | +0.0036 |
 
 ### VOZ-HSD Test
@@ -199,11 +209,13 @@ All numbers below come from a single run with seed 42. The comparison is between
 | TF-IDF + SVM | 0.9641 | 0.7831 | 0.5850 |
 | BiLSTM + fastText | 0.8650 | 0.6712 | 0.4187 |
 | PhoBERT-CNN | 0.9623 | 0.8150 | 0.6500 |
-| AmpleHate | 0.9643 | 0.8185 | 0.6557 |
-| **ViAmpleHate** | 0.9420 | **0.8371** | **0.7065** |
+| ViSoBERT | 0.9436 | **0.8444** | **0.7202** |
+| CafeBERT | 0.9436 | 0.8428 | 0.7169 |
+| AmpleHate | **0.9643** | 0.8185 | 0.6557 |
+| ViAmpleHate | 0.9420 | 0.8371 | 0.7065 |
 | Delta vs. AmpleHate | -0.0223 | +0.0186 | +0.0508 |
 
-The clearest gain is on the VOZ-HSD HATE class, where HATE-F1 improves by 0.0508 over AmpleHate. On ViHSD, the margin is small and should be checked with multi-seed evaluation.
+ViAmpleHate improves over AmpleHate on both datasets in Macro-F1 and HATE-F1, with the clearest gain on VOZ-HSD HATE-F1 (+0.0508). The newly added ViSoBERT and CafeBERT plain fine-tuning baselines are strong comparison points; CafeBERT performs best on ViHSD, while ViSoBERT performs best on VOZ-HSD Macro-F1 and HATE-F1. All results are from a single seed and should be checked with multi-seed evaluation.
 
 ---
 
@@ -408,6 +420,7 @@ The LaTeX files in `paper/overleaf/latex/` include `en_viamplehate.tex`, `vi_via
 - Results depend on Vietnamese NER, word segmentation, and token/span alignment.
 - The decision threshold is tuned on validation and may not transfer optimally under domain shift.
 - Results are from a single run with seed 42, without statistical significance testing or multi-seed evaluation.
+- The newly added encoder baselines are plain fine-tuning runs, not target-aware architectures, so they should be interpreted as strong representation baselines rather than ablations of ViAmpleHate.
 - The current task is binary NON-HATE/HATE classification and does not yet handle multi-target or graded hate annotations.
 
 ---
@@ -416,6 +429,8 @@ The LaTeX files in `paper/overleaf/latex/` include `en_viamplehate.tex`, `vi_via
 
 - AmpleHate: the original target-aware model for implicit hate detection.
 - PhoBERT: `vinai/phobert-base` for Vietnamese representation learning.
+- ViSoBERT: `uitnlp/visobert` as a Vietnamese social-media encoder baseline.
+- CafeBERT: `uitnlp/CafeBERT` as a Vietnamese encoder baseline.
 - ViHSD: Vietnamese Hate Speech Detection dataset.
 - VOZ-HSD: hate speech dataset from the VOZ forum.
 - fastText: `cc.vi.300.vec.gz` for the BiLSTM baseline.
