@@ -1,0 +1,26 @@
+{
+  "notebook": "vihsd-baseline-visobert",
+  "method": "Plain fine-tune (encoder + linear on CLS)",
+  "encoder": "uitnlp/visobert",
+  "max_len": 256,
+  "hidden_dim": 768,
+  "batch_size": 16,
+  "grad_accum": 2,
+  "dropout": 0.1,
+  "label_smoothing": 0.05,
+  "lr_encoder": 2e-05,
+  "lr_head": 5e-05,
+  "num_classes": 2,
+  "label_names": [
+    "NON-HATE",
+    "HATE"
+  ],
+  "best_epoch": 4,
+  "best_val_f1": 0.8002,
+  "best_threshold": 0.55,
+  "test_accuracy": 0.9169,
+  "test_macro_f1": 0.7672,
+  "test_macro_p": 0.7772,
+  "test_macro_r": 0.7581,
+  "test_f1_hate": 0.5805
+}

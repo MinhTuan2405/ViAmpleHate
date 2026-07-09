@@ -1,0 +1,26 @@
+{
+  "notebook": "vihsd-baseline-cafebert",
+  "method": "Plain fine-tune (encoder + linear on CLS)",
+  "encoder": "uitnlp/CafeBERT",
+  "max_len": 256,
+  "hidden_dim": 1024,
+  "batch_size": 8,
+  "grad_accum": 4,
+  "dropout": 0.1,
+  "label_smoothing": 0.05,
+  "lr_encoder": 1e-05,
+  "lr_head": 3e-05,
+  "num_classes": 2,
+  "label_names": [
+    "NON-HATE",
+    "HATE"
+  ],
+  "best_epoch": 4,
+  "best_val_f1": 0.7899,
+  "best_threshold": 0.65,
+  "test_accuracy": 0.9217,
+  "test_macro_f1": 0.7885,
+  "test_macro_p": 0.788,
+  "test_macro_r": 0.7891,
+  "test_f1_hate": 0.6207
+}
