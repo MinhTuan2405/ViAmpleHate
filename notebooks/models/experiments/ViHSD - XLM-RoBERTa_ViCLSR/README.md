@@ -8,7 +8,7 @@ Mục tiêu: chạy hai model cho bài toán Vietnamese hate speech detection:
 File notebook đã chuẩn bị sẵn:
 
 ```text
-kaggle/viamplehate_two_models_kaggle.ipynb
+notebooks/models/experiments/ViHSD - XLM-RoBERTa_ViCLSR/viamplehate-xlm-roberta-viclsr.ipynb
 ```
 
 Bạn có thể upload notebook này lên Kaggle và chạy từng cell. Các lệnh CLI bên dưới là bản tương đương nếu muốn chạy bằng terminal/cell shell.
@@ -20,12 +20,12 @@ Notebook có sẵn 2 smoke-test cell. Chạy smoke test trước để xác nh�
 1. Vào Kaggle -> Create Notebook.
 2. Bật Accelerator: `GPU T4 x2` hoặc ít nhất `GPU T4`.
 3. Bật Internet: `Settings -> Internet -> On`.
-4. Upload `kaggle/viamplehate_two_models_kaggle.ipynb`, rồi clone repo trực tiếp trong notebook; hoặc upload cả repo.
+4. Upload notebook ở đường dẫn trên, rồi clone repo trực tiếp trong notebook; hoặc upload cả repo.
 
 Clone trực tiếp:
 
 ```bash
-!git clone https://github.com/MinhTuan2405/ViAmpleHate.git
+!git clone -b trung-dev https://github.com/MinhTuan2405/ViAmpleHate.git
 %cd ViAmpleHate
 ```
 
@@ -34,7 +34,7 @@ Nếu bạn đang upload repo thủ công thì `%cd` vào đúng thư mục ch�
 ## 2. Cài thư viện
 
 ```bash
-!pip install -q -r kaggle/requirements.txt
+!pip install -q -r "notebooks/models/experiments/ViHSD - XLM-RoBERTa_ViCLSR/requirements.txt"
 ```
 
 Nếu Kaggle báo version conflict nhẹ, restart session rồi chạy lại từ đầu.
@@ -46,7 +46,7 @@ ViHSD mirror notebook gốc: tải `sonlam1102/vihsd`, dùng các split `train/v
 XLM-RoBERTa:
 
 ```bash
-!python kaggle/run_two_models.py \
+!python "notebooks/models/experiments/ViHSD - XLM-RoBERTa_ViCLSR/run_two_models.py" \
   --dataset vihsd \
   --model xlm-roberta \
   --epochs 3 \
@@ -57,7 +57,7 @@ XLM-RoBERTa:
 ViCLSR:
 
 ```bash
-!python kaggle/run_two_models.py \
+!python "notebooks/models/experiments/ViHSD - XLM-RoBERTa_ViCLSR/run_two_models.py" \
   --dataset vihsd \
   --model viclsr \
   --epochs 3 \
@@ -77,8 +77,8 @@ Script có 2 policy:
 - `--voz-split-policy baseline`: mirror các notebook baseline VOZ-HSD, giữ tỉ lệ class tự nhiên, split `80/10/10`.
 
 ```bash
-!python kaggle/run_two_models.py --dataset vozhsd --model xlm-roberta --epochs 3 --batch-size 8 --voz-split-policy proposed
-!python kaggle/run_two_models.py --dataset vozhsd --model viclsr --epochs 3 --batch-size 1 --eval-batch-size 2 --voz-split-policy proposed
+!python "notebooks/models/experiments/ViHSD - XLM-RoBERTa_ViCLSR/run_two_models.py" --dataset vozhsd --model xlm-roberta --epochs 3 --batch-size 8 --voz-split-policy proposed
+!python "notebooks/models/experiments/ViHSD - XLM-RoBERTa_ViCLSR/run_two_models.py" --dataset vozhsd --model viclsr --epochs 3 --batch-size 1 --eval-batch-size 2 --voz-split-policy proposed
 ```
 
 Nếu muốn so với baseline notebooks cũ thì đổi thành `--voz-split-policy baseline`. Với baseline BiLSTM gốc còn cần fastText vectors, nhưng XLM-RoBERTa/ViCLSR không dùng file `cc.vi.300.vec.gz`.
