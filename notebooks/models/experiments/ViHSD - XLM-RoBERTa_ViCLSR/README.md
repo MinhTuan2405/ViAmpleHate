@@ -101,6 +101,36 @@ Metrics chính cần báo cáo:
 - `hate_f1`
 - classification report trong log và `metrics.json`
 
-## 6. Ghi chú đúng với hai link bạn gửi
+Các artifact nhẹ đã lưu trong:
+
+```text
+notebooks/models/experiments/ViHSD - XLM-RoBERTa_ViCLSR/output/
+├── README.md
+├── vihsd_xlmr_viclsr_results.csv
+└── metrics/
+    ├── xlm-roberta_metrics.json
+    └── viclsr_metrics.json
+```
+
+Checkpoint `best_model.pt` không được commit vì mỗi file có thể nặng hàng GB. Nếu cần giữ checkpoint, lưu qua Kaggle Output, Google Drive, Hugging Face Hub, hoặc Git LFS.
+
+## 6. ViHSD Results
+
+Run configuration:
+
+- Dataset: `sonlam1102/vihsd`
+- Seed: `42`
+- Epochs: `5`
+- Max sequence length: `128`
+- Metrics: test split
+
+| Dataset | Model | Accuracy | Macro-F1 | HATE-F1 |
+|---|---:|---:|---:|---:|
+| ViHSD | XLM-RoBERTa-base | 0.9109 | 0.7484 | 0.5461 |
+| ViHSD | ViCLSR | 0.8970 | 0.4729 | 0.0000 |
+
+XLM-RoBERTa-base performs better on ViHSD in this direct fine-tuning setup. ViCLSR reaches high accuracy by predicting the majority `NON-HATE` class, but its `HATE-F1` is `0.0000`, showing why macro-F1 and HATE-F1 are more informative than accuracy for this imbalanced dataset.
+
+## 7. Ghi chú đúng với hai link bạn gửi
 
 Tài liệu Hugging Face mô tả XLM-RoBERTa là multilingual masked language model, có thể dùng cho downstream task như text classification qua Transformers. Paper ViCLSR đề xuất supervised contrastive learning cho sentence representations tiếng Việt và công bố checkpoint `huynhtin/ViCLSR`; script này load đúng `XLMRobertaModel` cùng MLP projection head `mlp.dense`, sau đó fine-tune classifier cho dataset hate speech trong repo.

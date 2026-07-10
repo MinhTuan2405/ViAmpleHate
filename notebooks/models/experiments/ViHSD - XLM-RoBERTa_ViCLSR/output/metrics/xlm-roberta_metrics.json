@@ -1,0 +1,6 @@
+{
+  "accuracy": 0.9109281437125748,
+  "macro_f1": 0.7483831436077917,
+  "hate_f1": 0.5461479786422578,
+  "report": "              precision    recall  f1-score   support\n\n    NON-HATE     0.9455    0.9558    0.9506      5992\n        HATE     0.5746    0.5203    0.5461       688\n\n    accuracy                         0.9109      6680\n   macro avg     0.7601    0.7381    0.7484      6680\nweighted avg     0.9073    0.9109    0.9090      6680\n"
+}
