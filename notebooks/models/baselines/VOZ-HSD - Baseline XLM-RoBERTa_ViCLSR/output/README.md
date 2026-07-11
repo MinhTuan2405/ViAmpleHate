@@ -5,6 +5,9 @@ Sau khi chạy xong hai model, đưa các file kết quả nhẹ vào đây:
 - `metrics/xlm-roberta_metrics.json`
 - `metrics/viclsr_metrics.json`
 - `vozhsd_xlmr_viclsr_results.csv`
+- `training_history.csv`
+- `confusion_matrices.csv`
+- `models/vozhsd_xlmr_viclsr_config.json`
 
 Không commit `best_model.pt` hoặc tokenizer dung lượng lớn vào Git.
 
