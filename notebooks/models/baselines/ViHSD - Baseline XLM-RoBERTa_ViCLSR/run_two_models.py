@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import gc
 import json
 import os
 import random
@@ -12,7 +13,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from datasets import load_dataset
-from huggingface_hub import hf_hub_download
 from sklearn.metrics import accuracy_score, classification_report, f1_score
 from torch.utils.data import DataLoader, Dataset
 from tqdm.auto import tqdm
@@ -61,12 +61,11 @@ def sample_vozhsd(
 ) -> tuple[pd.DataFrame, float, tuple[float, float, float]]:
     sample_size = min(sample_size, len(df))
     if policy == "baseline":
-        sampled_df = (
-            df.groupby("label", group_keys=False)
-            .apply(lambda g: g.sample(frac=sample_size / len(df), random_state=seed))
-            .sample(frac=1, random_state=seed)
-            .reset_index(drop=True)
-        )
+        fraction = sample_size / len(df)
+        sampled_df = pd.concat(
+            [group.sample(frac=fraction, random_state=seed) for _, group in df.groupby("label")],
+            ignore_index=True,
+        ).sample(frac=1, random_state=seed).reset_index(drop=True)
         return sampled_df, float(sampled_df["label"].mean()), (0.8, 0.1, 0.1)
 
     if policy == "proposed":
@@ -161,16 +160,24 @@ class TextDataset(Dataset):
         }
 
 
-def load_viclsr_encoder(model_name: str) -> XLMRobertaModel:
+class ViCLSRProjection(nn.Module):
+    def __init__(self, hidden_size: int):
+        super().__init__()
+        self.dense = nn.Linear(hidden_size, hidden_size)
+
+    def forward(self, features: torch.Tensor) -> torch.Tensor:
+        return self.dense(features)
+
+
+class ViCLSRModel(XLMRobertaModel):
+    def __init__(self, config):
+        super().__init__(config)
+        self.mlp = ViCLSRProjection(config.hidden_size)
+
+
+def load_viclsr_encoder(model_name: str) -> ViCLSRModel:
     os.environ.setdefault("DISABLE_SAFETENSORS_CONVERSION", "1")
-    encoder = XLMRobertaModel.from_pretrained(model_name, use_safetensors=False)
-    hidden_size = encoder.config.hidden_size
-    encoder.mlp = nn.Linear(hidden_size, hidden_size)
-    ckpt_path = hf_hub_download(repo_id=model_name, filename="pytorch_model.bin")
-    state_dict = torch.load(ckpt_path, map_location="cpu")
-    encoder.mlp.weight = nn.Parameter(state_dict["mlp.dense.weight"])
-    encoder.mlp.bias = nn.Parameter(state_dict["mlp.dense.bias"])
-    return encoder
+    return ViCLSRModel.from_pretrained(model_name, use_safetensors=False)
 
 
 class EncoderClassifier(nn.Module):
@@ -265,6 +272,8 @@ def train(args: argparse.Namespace) -> None:
     for split_name, df in [("train", train_df), ("val", val_df), ("test", test_df)]:
         print(f"{split_name}: {len(df):,} rows | labels={df['label'].value_counts().sort_index().to_dict()}")
 
+    gc.collect()
+    print("Tokenizing dataset...", flush=True)
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     train_data = TextDataset(train_df, tokenizer, args.max_len)
     val_data = TextDataset(val_df, tokenizer, args.max_len)
@@ -273,11 +282,13 @@ def train(args: argparse.Namespace) -> None:
     val_loader = DataLoader(val_data, batch_size=args.eval_batch_size, shuffle=False, num_workers=2, pin_memory=True)
     test_loader = DataLoader(test_data, batch_size=args.eval_batch_size, shuffle=False, num_workers=2, pin_memory=True)
 
+    print("Loading model weights...", flush=True)
     model = EncoderClassifier(
         model_name=model_name,
         dropout=args.dropout,
         use_viclsr_head=args.model == "viclsr",
     ).to(device)
+    print("Model ready. Starting training...", flush=True)
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     total_steps = len(train_loader) * args.epochs
     scheduler = get_linear_schedule_with_warmup(
