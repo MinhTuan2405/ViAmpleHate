@@ -13,6 +13,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from datasets import load_dataset
+from huggingface_hub import hf_hub_download
 from sklearn.metrics import accuracy_score, classification_report, f1_score
 from torch.utils.data import DataLoader, Dataset
 from tqdm.auto import tqdm
@@ -169,15 +170,17 @@ class ViCLSRProjection(nn.Module):
         return self.dense(features)
 
 
-class ViCLSRModel(XLMRobertaModel):
-    def __init__(self, config):
-        super().__init__(config)
-        self.mlp = ViCLSRProjection(config.hidden_size)
-
-
-def load_viclsr_encoder(model_name: str) -> ViCLSRModel:
+def load_viclsr_encoder(model_name: str) -> XLMRobertaModel:
     os.environ.setdefault("DISABLE_SAFETENSORS_CONVERSION", "1")
-    return ViCLSRModel.from_pretrained(model_name, use_safetensors=False)
+    encoder = XLMRobertaModel.from_pretrained(model_name, use_safetensors=False)
+    encoder.mlp = ViCLSRProjection(encoder.config.hidden_size)
+    ckpt_path = hf_hub_download(repo_id=model_name, filename="pytorch_model.bin")
+    state_dict = torch.load(ckpt_path, map_location="cpu", weights_only=True, mmap=True)
+    encoder.mlp.dense.weight = nn.Parameter(state_dict["mlp.dense.weight"].clone())
+    encoder.mlp.dense.bias = nn.Parameter(state_dict["mlp.dense.bias"].clone())
+    del state_dict
+    print("Loaded ViCLSR projection head: mlp.dense.weight/bias", flush=True)
+    return encoder
 
 
 class EncoderClassifier(nn.Module):
@@ -219,7 +222,7 @@ def supervised_contrastive_loss(features: torch.Tensor, labels: torch.Tensor, te
 
 
 @torch.no_grad()
-def evaluate(model: nn.Module, loader: DataLoader, device: torch.device) -> dict[str, object]:
+def evaluate(model: nn.Module, loader: DataLoader, device: torch.device, use_amp: bool = False) -> dict[str, object]:
     model.eval()
     all_preds: list[int] = []
     all_labels: list[int] = []
@@ -227,7 +230,8 @@ def evaluate(model: nn.Module, loader: DataLoader, device: torch.device) -> dict
         input_ids = batch["input_ids"].to(device)
         attention_mask = batch["attention_mask"].to(device)
         labels = batch["labels"].to(device)
-        logits, _ = model(input_ids=input_ids, attention_mask=attention_mask)
+        with torch.autocast(device_type=device.type, dtype=torch.float16, enabled=use_amp):
+            logits, _ = model(input_ids=input_ids, attention_mask=attention_mask)
         all_preds.extend(torch.argmax(logits, dim=1).cpu().tolist())
         all_labels.extend(labels.cpu().tolist())
 
@@ -290,6 +294,8 @@ def train(args: argparse.Namespace) -> None:
     ).to(device)
     print("Model ready. Starting training...", flush=True)
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
+    use_amp = args.fp16 and device.type == "cuda"
+    scaler = torch.amp.GradScaler("cuda", enabled=use_amp)
     total_steps = len(train_loader) * args.epochs
     scheduler = get_linear_schedule_with_warmup(
         optimizer,
@@ -313,21 +319,24 @@ def train(args: argparse.Namespace) -> None:
             attention_mask = batch["attention_mask"].to(device)
             labels = batch["labels"].to(device)
 
-            logits, features = model(input_ids=input_ids, attention_mask=attention_mask)
-            loss = ce_loss(logits, labels)
-            if args.model == "viclsr" and args.contrastive_weight > 0:
-                loss = loss + args.contrastive_weight * supervised_contrastive_loss(
-                    features, labels, temperature=args.temperature
-                )
+            with torch.autocast(device_type=device.type, dtype=torch.float16, enabled=use_amp):
+                logits, features = model(input_ids=input_ids, attention_mask=attention_mask)
+                loss = ce_loss(logits, labels)
+                if args.model == "viclsr" and args.contrastive_weight > 0:
+                    loss = loss + args.contrastive_weight * supervised_contrastive_loss(
+                        features, labels, temperature=args.temperature
+                    )
 
-            loss.backward()
+            scaler.scale(loss).backward()
+            scaler.unscale_(optimizer)
             torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
-            optimizer.step()
+            scaler.step(optimizer)
+            scaler.update()
             scheduler.step()
             running_loss += loss.item()
             progress.set_postfix(loss=f"{loss.item():.4f}")
 
-        val_metrics = evaluate(model, val_loader, device)
+        val_metrics = evaluate(model, val_loader, device, use_amp=use_amp)
         mean_loss = running_loss / max(len(train_loader), 1)
         print(
             f"epoch={epoch} train_loss={mean_loss:.4f} "
@@ -342,7 +351,7 @@ def train(args: argparse.Namespace) -> None:
             print(f"saved best checkpoint -> {best_path}")
 
     model.load_state_dict(torch.load(best_path, map_location=device))
-    test_metrics = evaluate(model, test_loader, device)
+    test_metrics = evaluate(model, test_loader, device, use_amp=use_amp)
     print("\nTEST")
     print(json.dumps({k: v for k, v in test_metrics.items() if k != "report"}, indent=2))
     print(test_metrics["report"])
@@ -375,6 +384,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--voz-sample-size", type=int, default=100_000)
     parser.add_argument("--voz-hate-ratio", type=float, default=0.10)
     parser.add_argument("--smoke-test", action="store_true", help="Run a tiny end-to-end check before full training.")
+    parser.add_argument("--fp16", action="store_true", help="Use CUDA mixed precision to reduce VRAM and training time.")
     return parser.parse_args()
 
 
