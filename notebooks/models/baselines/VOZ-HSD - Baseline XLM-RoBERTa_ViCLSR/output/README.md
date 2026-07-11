@@ -1,14 +1,14 @@
-# VOZ-HSD outputs
+# Archived outputs
 
-Sau khi chạy xong hai model, đưa các file kết quả nhẹ vào đây:
+Lightweight artifacts from the completed VOZ-HSD Kaggle runs.
 
-- `metrics/xlm-roberta_metrics.json`
-- `metrics/viclsr_metrics.json`
-- `vozhsd_xlmr_viclsr_results.csv`
-- `training_history.csv`
-- `confusion_matrices.csv`
-- `models/vozhsd_xlmr_viclsr_config.json`
+| File | Contents |
+|---|---|
+| `vozhsd_xlmr_viclsr_results.csv` | Final model comparison |
+| `training_history.csv` | Per-epoch train loss and validation metrics |
+| `confusion_matrices.csv` | Test confusion matrices in numeric form |
+| `metrics/xlm-roberta_metrics.json` | XLM-RoBERTa test report and run configuration |
+| `metrics/viclsr_metrics.json` | ViCLSR test report and run configuration |
+| `models/vozhsd_xlmr_viclsr_config.json` | Shared experiment and model settings |
 
-Không commit `best_model.pt` hoặc tokenizer dung lượng lớn vào Git.
-
-Các file metrics hiện tại được khôi phục từ completed Kaggle run logs sau khi session chứa checkpoint bị restart. Chúng giữ nguyên test metrics, classification report và cấu hình lệnh chạy; không có checkpoint đi kèm.
+The metrics, reports, and histories are archived from successful Kaggle processes (`returncode=0`) and match the outputs embedded in the notebook. Large checkpoints and tokenizer caches are intentionally excluded from Git.

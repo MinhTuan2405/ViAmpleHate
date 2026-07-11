@@ -1,31 +1,74 @@
 # VOZ-HSD - Baseline XLM-RoBERTa + ViCLSR
 
-Kaggle notebook: `voz-hsd-baseline-xlm-roberta-viclsr.ipynb`.
+Completed Kaggle baseline comparing `FacebookAI/xlm-roberta-base` and `huynhtin/ViCLSR` on VOZ-HSD. The notebook includes the archived training logs, validation history, test reports, and final comparison from successful runs (`returncode=0`).
 
-Notebook fine-tune hai model trên `tarudesu/VOZ-HSD`:
+## Experiment setup
 
-- `FacebookAI/xlm-roberta-base`
-- `huynhtin/ViCLSR`
+| Item | Value |
+|---|---|
+| Dataset | `tarudesu/VOZ-HSD` |
+| Sampling | 100,000 stratified examples, natural class distribution |
+| Split | 80,000 train / 10,000 validation / 10,000 test |
+| Train labels | 75,646 NON-HATE / 4,354 HATE |
+| Validation labels | 9,430 NON-HATE / 570 HATE |
+| Test labels | 9,486 NON-HATE / 514 HATE |
+| Seed | 42 |
+| Maximum sequence length | 128 |
+| Checkpoint selection | Best validation macro-F1 |
+| Runtime | Kaggle, NVIDIA Tesla T4 |
 
-Cách lấy dữ liệu khớp các notebook baseline VOZ-HSD trong repo: lấy mẫu phân tầng 100.000 dòng, giữ tỉ lệ nhãn tự nhiên, xáo trộn với seed 42 rồi chia train/dev/test theo tỉ lệ 80/10/10.
+The sampling and `80/10/10` split follow the VOZ-HSD baseline convention used in this repository. Both models use the same sampled data, split, seed, and maximum sequence length.
 
-Cấu hình mặc định dùng max length 128. XLM-RoBERTa-base chạy 5 epochs với batch size 8; ViCLSR chạy 2 epochs với FP16 và batch size 4 do dùng XLM-RoBERTa-Large và tốn thời gian/VRAM hơn đáng kể. Batch ViCLSR phải lớn hơn 1 để supervised contrastive loss có positive pairs trong batch. Vì training budget khác nhau, kết quả này là so sánh baseline trong giới hạn tài nguyên Kaggle, không phải so sánh compute-matched. Mỗi `metrics.json` lưu toàn bộ cấu hình thực tế trong trường `config`.
+## Training configuration
 
-Trên Kaggle, bật Internet và GPU T4, mở notebook, chạy hai smoke test rồi chạy XLM-RoBERTa và ViCLSR. Kết quả được lưu vào `/kaggle/working/viamplehate_runs_vozhsd_seed42/`.
+| Model | Checkpoint | Epochs | Batch | Eval batch | Precision |
+|---|---|---:|---:|---:|---|
+| XLM-RoBERTa | `FacebookAI/xlm-roberta-base` | 5 | 8 | 16 | FP32 |
+| ViCLSR | `huynhtin/ViCLSR` | 2 | 4 | 8 | FP16 |
 
-Checkpoint `best_model.pt` không commit vào Git vì dung lượng lớn. Sau khi train xong, dùng Save Version hoặc tạo Kaggle Dataset để giữ checkpoint.
+ViCLSR uses an XLM-RoBERTa-Large backbone and therefore runs with a smaller training budget under Kaggle T4 constraints. Its batch size remains greater than one so the supervised contrastive objective can form positive pairs. This is a resource-constrained baseline comparison, not a compute-matched comparison.
 
-## Kết quả VOZ-HSD
+## Test results
 
-Kết quả dưới đây được ghi lại từ hai full run hoàn tất trên Kaggle T4 (`returncode=0`). Cả hai model dùng cùng sample 100.000 dòng, split và seed; training budget khác nhau như đã mô tả ở trên.
+| Model | Accuracy | Macro-F1 | HATE precision | HATE recall | HATE-F1 |
+|---|---:|---:|---:|---:|---:|
+| XLM-RoBERTa | **0.9706** | **0.8458** | **0.7245** | **0.6907** | **0.7072** |
+| ViCLSR | 0.9486 | 0.4868 | 0.0000 | 0.0000 | 0.0000 |
 
-| Model | Epochs | Batch | FP16 | Accuracy | Macro-F1 | HATE-F1 |
-|---|---:|---:|:---:|---:|---:|---:|
-| XLM-RoBERTa-base | 5 | 8 | No | 0.9706 | 0.8458 | 0.7072 |
-| ViCLSR | 2 | 4 | Yes | 0.9486 | 0.4868 | 0.0000 |
+XLM-RoBERTa reached its best validation result at epoch 5 (`macro-F1=0.8524`, `HATE-F1=0.7210`) and retained meaningful precision and recall for the minority HATE class on the test set.
 
-XLM-RoBERTa đạt kết quả tốt nhất ở epoch 5 theo validation macro-F1 (`0.8524`), với validation HATE-F1 `0.7210`. Trên test set, HATE precision/recall/F1 lần lượt là `0.7245/0.6907/0.7072`.
+ViCLSR converged to the majority NON-HATE class in this configuration. It classified all 10,000 test examples as NON-HATE, so its high accuracy reflects the class distribution rather than useful HATE detection. Macro-F1 and HATE-F1 are therefore the primary comparison metrics.
 
-ViCLSR không học được lớp thiểu số trong cấu hình này: cả hai epoch có validation HATE-F1 bằng `0.0000`, và trên test set model dự đoán toàn bộ mẫu là `NON-HATE`. Accuracy `0.9486` vì `NON-HATE` chiếm 9.486/10.000 mẫu, nên macro-F1 và HATE-F1 phản ánh chất lượng phù hợp hơn accuracy.
+## Repository contents
 
-Các metrics và classification report đã được lưu lại trong `output/metrics/`; bảng tổng hợp nằm tại `output/vozhsd_xlmr_viclsr_results.csv`. Checkpoint Kaggle không thể khôi phục từ log sau khi session restart và không có trong repository.
+```text
+VOZ-HSD - Baseline XLM-RoBERTa_ViCLSR/
+├── voz-hsd-baseline-xlm-roberta-viclsr.ipynb
+├── run_two_models.py
+├── requirements.txt
+├── README.md
+└── output/
+    ├── README.md
+    ├── vozhsd_xlmr_viclsr_results.csv
+    ├── training_history.csv
+    ├── confusion_matrices.csv
+    ├── metrics/
+    │   ├── xlm-roberta_metrics.json
+    │   └── viclsr_metrics.json
+    └── models/
+        └── vozhsd_xlmr_viclsr_config.json
+```
+
+The notebook is the reproducible Kaggle workflow. The lightweight files under `output/` archive the exact configurations, epoch history, confusion matrices, classification reports, and final metrics used in the comparison.
+
+Large `best_model.pt` checkpoints and tokenizer caches are intentionally excluded from Git. A future rerun should preserve them using Kaggle Save Version or a dedicated model store.
+
+## Reproduce on Kaggle
+
+1. Enable Internet and an NVIDIA T4 accelerator.
+2. Add the `HF_TOKEN` Kaggle secret.
+3. Open `voz-hsd-baseline-xlm-roberta-viclsr.ipynb`.
+4. Run the setup and configuration cells.
+5. Run XLM-RoBERTa, then ViCLSR, and archive the generated `/kaggle/working/viamplehate_runs_vozhsd_seed42/` directory.
+
+Use `macro_f1` and `hate_f1` as the main reporting metrics because VOZ-HSD is strongly imbalanced.
