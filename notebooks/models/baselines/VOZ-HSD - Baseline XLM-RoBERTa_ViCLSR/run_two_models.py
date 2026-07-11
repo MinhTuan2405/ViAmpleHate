@@ -336,6 +336,7 @@ def train(args: argparse.Namespace) -> None:
     print(json.dumps({k: v for k, v in test_metrics.items() if k != "report"}, indent=2))
     print(test_metrics["report"])
 
+    test_metrics["config"] = vars(args)
     metrics_path = out_dir / "metrics.json"
     with metrics_path.open("w", encoding="utf-8") as f:
         json.dump(test_metrics, f, ensure_ascii=False, indent=2)
