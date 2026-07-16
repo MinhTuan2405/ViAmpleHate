@@ -1,6 +1,6 @@
-# VOZ-HSD - Baseline XLM-RoBERTa + ViCLSR
+# VOZ-HSD - Proposed XLM-RoBERTa + ViCLSR
 
-Completed Kaggle baseline comparing `FacebookAI/xlm-roberta-base` and `huynhtin/ViCLSR` on VOZ-HSD. The notebook includes the archived training logs, validation history, test reports, and final comparison from successful runs (`returncode=0`).
+Completed Kaggle proposed experiment comparing `FacebookAI/xlm-roberta-base` and `huynhtin/ViCLSR` on VOZ-HSD. The notebook includes the archived training logs, validation history, test reports, and final comparison from successful runs (`returncode=0`).
 
 ## Experiment setup
 
@@ -17,7 +17,7 @@ Completed Kaggle baseline comparing `FacebookAI/xlm-roberta-base` and `huynhtin/
 | Checkpoint selection | Best validation macro-F1 |
 | Runtime | Kaggle, NVIDIA Tesla T4 |
 
-The sampling and `80/10/10` split follow the VOZ-HSD baseline convention used in this repository. Both models use the same sampled data, split, seed, and maximum sequence length.
+The sampling and `80/10/10` split follow the natural-distribution VOZ-HSD protocol used for this experiment. Both models use the same sampled data, split, seed, and maximum sequence length.
 
 ## Training configuration
 
@@ -26,7 +26,7 @@ The sampling and `80/10/10` split follow the VOZ-HSD baseline convention used in
 | XLM-RoBERTa | `FacebookAI/xlm-roberta-base` | 5 | 8 | 16 | FP32 |
 | ViCLSR | `huynhtin/ViCLSR` | 2 | 4 | 8 | FP16 |
 
-ViCLSR uses an XLM-RoBERTa-Large backbone and therefore runs with a smaller training budget under Kaggle T4 constraints. Its batch size remains greater than one so the supervised contrastive objective can form positive pairs. This is a resource-constrained baseline comparison, not a compute-matched comparison.
+ViCLSR uses an XLM-RoBERTa-Large backbone and therefore runs with a smaller training budget under Kaggle T4 constraints. Its batch size remains greater than one so the supervised contrastive objective can form positive pairs. This is a resource-constrained proposed experiment, not a compute-matched comparison.
 
 ## Test results
 
@@ -42,8 +42,8 @@ ViCLSR converged to the majority NON-HATE class in this configuration. It classi
 ## Repository contents
 
 ```text
-VOZ-HSD - Baseline XLM-RoBERTa_ViCLSR/
-├── voz-hsd-baseline-xlm-roberta-viclsr.ipynb
+VOZ-HSD - Proposed XLM-RoBERTa_ViCLSR/
+├── voz-hsd-proposed-xlm-roberta-viclsr.ipynb
 ├── run_two_models.py
 ├── requirements.txt
 ├── README.md
@@ -67,7 +67,7 @@ Large `best_model.pt` checkpoints and tokenizer caches are intentionally exclude
 
 1. Enable Internet and an NVIDIA T4 accelerator.
 2. Add the `HF_TOKEN` Kaggle secret.
-3. Open `voz-hsd-baseline-xlm-roberta-viclsr.ipynb`.
+3. Open `voz-hsd-proposed-xlm-roberta-viclsr.ipynb`.
 4. Run the setup and configuration cells.
 5. Run XLM-RoBERTa, then ViCLSR, and archive the generated `/kaggle/working/viamplehate_runs_vozhsd_seed42/` directory.
 

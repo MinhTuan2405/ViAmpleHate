@@ -1,6 +1,6 @@
-# ViHSD - Baseline XLM-RoBERTa + ViCLSR
+# ViHSD - Proposed XLM-RoBERTa + ViCLSR
 
-Kaggle notebook: `vihsd-baseline-xlm-roberta-viclsr.ipynb`.
+Kaggle notebook: `vihsd-proposed-xlm-roberta-viclsr.ipynb`.
 
 Notebook fine-tune hai model trên các split chính thức của `sonlam1102/vihsd`:
 

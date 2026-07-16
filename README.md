@@ -83,7 +83,9 @@ ViAmpleHate/
 │       │   └── VOZ-HSD - Baseline .../
 │       └── proposed/
 │           ├── ViHSD - Proposed ViAmpleHate_PhoBERT/
-│           └── VOZ-HSD - Proposed ViAmpleHate_PhoBERT/
+│           ├── VOZ-HSD - Proposed ViAmpleHate_PhoBERT/
+│           ├── ViHSD - Proposed XLM-RoBERTa_ViCLSR/
+│           └── VOZ-HSD - Proposed XLM-RoBERTa_ViCLSR/
 └── paper/
     ├── draft/
     │   ├── latex/
