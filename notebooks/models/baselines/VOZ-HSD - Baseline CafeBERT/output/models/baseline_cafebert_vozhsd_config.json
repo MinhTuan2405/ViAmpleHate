@@ -1,5 +1,5 @@
 {
-  "notebook": "vozhsd-baseline-cafebert",
+  "notebook": "vozhsd-baseline-cafebert-lr2e5",
   "method": "Plain fine-tune (encoder + linear on CLS)",
   "encoder": "uitnlp/CafeBERT",
   "max_len": 256,
@@ -8,19 +8,19 @@
   "grad_accum": 4,
   "dropout": 0.1,
   "label_smoothing": 0.05,
-  "lr_encoder": 1e-05,
-  "lr_head": 3e-05,
+  "lr_encoder": 2e-05,
+  "lr_head": 5e-05,
   "num_classes": 2,
   "label_names": [
     "NON-HATE",
     "HATE"
   ],
   "best_epoch": 3,
-  "best_val_f1": 0.8539,
-  "best_threshold": 0.85,
-  "test_accuracy": 0.9436,
-  "test_macro_f1": 0.8428,
-  "test_macro_p": 0.8523,
-  "test_macro_r": 0.8339,
-  "test_f1_hate": 0.7169
+  "best_val_f1": 0.8626,
+  "best_threshold": 0.77,
+  "test_accuracy": 0.9478,
+  "test_macro_f1": 0.8594,
+  "test_macro_p": 0.8566,
+  "test_macro_r": 0.8621,
+  "test_f1_hate": 0.7478
 }
