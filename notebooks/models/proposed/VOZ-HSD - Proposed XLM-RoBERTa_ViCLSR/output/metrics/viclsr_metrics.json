@@ -1,0 +1,28 @@
+{
+  "accuracy": 0.9486,
+  "macro_f1": 0.48681104382633683,
+  "hate_f1": 0.0,
+  "report": "              precision    recall  f1-score   support\n\n    NON-HATE     0.9486    1.0000    0.9736      9486\n        HATE     0.0000    0.0000    0.0000       514\n\n    accuracy                         0.9486     10000\n   macro avg     0.4743    0.5000    0.4868     10000\nweighted avg     0.8998    0.9486    0.9236     10000\n",
+  "config": {
+    "dataset": "vozhsd",
+    "model": "viclsr",
+    "output_dir": "/kaggle/working/viamplehate_runs_vozhsd_seed42",
+    "epochs": 2,
+    "batch_size": 4,
+    "eval_batch_size": 8,
+    "max_len": 128,
+    "lr": 2e-05,
+    "weight_decay": 0.01,
+    "warmup_ratio": 0.1,
+    "dropout": 0.1,
+    "contrastive_weight": 0.2,
+    "temperature": 0.07,
+    "max_grad_norm": 1.0,
+    "seed": 42,
+    "voz_split_policy": "baseline",
+    "voz_sample_size": 100000,
+    "voz_hate_ratio": 0.1,
+    "smoke_test": false,
+    "fp16": true
+  }
+}

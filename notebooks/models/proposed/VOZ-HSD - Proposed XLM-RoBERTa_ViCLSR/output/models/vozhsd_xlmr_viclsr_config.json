@@ -1,0 +1,30 @@
+{
+  "dataset": "tarudesu/VOZ-HSD",
+  "sample_size": 100000,
+  "sample_policy": "stratified_natural_distribution",
+  "split": {
+    "train": 80000,
+    "validation": 10000,
+    "test": 10000
+  },
+  "seed": 42,
+  "max_length": 128,
+  "selection_metric": "validation_macro_f1",
+  "models": {
+    "xlm-roberta": {
+      "checkpoint": "FacebookAI/xlm-roberta-base",
+      "epochs": 5,
+      "batch_size": 8,
+      "eval_batch_size": 16,
+      "fp16": false
+    },
+    "viclsr": {
+      "checkpoint": "huynhtin/ViCLSR",
+      "epochs": 2,
+      "batch_size": 4,
+      "eval_batch_size": 8,
+      "fp16": true
+    }
+  },
+  "checkpoint_status": "excluded_from_git_large_artifact"
+}

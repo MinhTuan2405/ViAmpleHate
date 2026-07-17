@@ -1,0 +1,3 @@
+model,actual_non_hate_pred_non_hate,actual_non_hate_pred_hate,actual_hate_pred_non_hate,actual_hate_pred_hate
+xlm-roberta,9351,135,159,355
+viclsr,9486,0,514,0

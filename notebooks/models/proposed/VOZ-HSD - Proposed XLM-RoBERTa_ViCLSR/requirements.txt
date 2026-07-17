@@ -1,5 +1,4 @@
-torch
-transformers>=4.40
+transformers==4.57.6
 datasets>=2.19
 accelerate>=0.29
 huggingface_hub>=0.23

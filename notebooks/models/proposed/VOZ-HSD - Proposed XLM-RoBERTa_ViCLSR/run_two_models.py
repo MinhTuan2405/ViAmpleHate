@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import gc
 import json
 import os
 import random
@@ -61,12 +62,11 @@ def sample_vozhsd(
 ) -> tuple[pd.DataFrame, float, tuple[float, float, float]]:
     sample_size = min(sample_size, len(df))
     if policy == "baseline":
-        sampled_df = (
-            df.groupby("label", group_keys=False)
-            .apply(lambda g: g.sample(frac=sample_size / len(df), random_state=seed))
-            .sample(frac=1, random_state=seed)
-            .reset_index(drop=True)
-        )
+        fraction = sample_size / len(df)
+        sampled_df = pd.concat(
+            [group.sample(frac=fraction, random_state=seed) for _, group in df.groupby("label")],
+            ignore_index=True,
+        ).sample(frac=1, random_state=seed).reset_index(drop=True)
         return sampled_df, float(sampled_df["label"].mean()), (0.8, 0.1, 0.1)
 
     if policy == "proposed":
@@ -161,15 +161,25 @@ class TextDataset(Dataset):
         }
 
 
+class ViCLSRProjection(nn.Module):
+    def __init__(self, hidden_size: int):
+        super().__init__()
+        self.dense = nn.Linear(hidden_size, hidden_size)
+
+    def forward(self, features: torch.Tensor) -> torch.Tensor:
+        return self.dense(features)
+
+
 def load_viclsr_encoder(model_name: str) -> XLMRobertaModel:
     os.environ.setdefault("DISABLE_SAFETENSORS_CONVERSION", "1")
     encoder = XLMRobertaModel.from_pretrained(model_name, use_safetensors=False)
-    hidden_size = encoder.config.hidden_size
-    encoder.mlp = nn.Linear(hidden_size, hidden_size)
+    encoder.mlp = ViCLSRProjection(encoder.config.hidden_size)
     ckpt_path = hf_hub_download(repo_id=model_name, filename="pytorch_model.bin")
-    state_dict = torch.load(ckpt_path, map_location="cpu")
-    encoder.mlp.weight = nn.Parameter(state_dict["mlp.dense.weight"])
-    encoder.mlp.bias = nn.Parameter(state_dict["mlp.dense.bias"])
+    state_dict = torch.load(ckpt_path, map_location="cpu", weights_only=True, mmap=True)
+    encoder.mlp.dense.weight = nn.Parameter(state_dict["mlp.dense.weight"].clone())
+    encoder.mlp.dense.bias = nn.Parameter(state_dict["mlp.dense.bias"].clone())
+    del state_dict
+    print("Loaded ViCLSR projection head: mlp.dense.weight/bias", flush=True)
     return encoder
 
 
@@ -212,7 +222,7 @@ def supervised_contrastive_loss(features: torch.Tensor, labels: torch.Tensor, te
 
 
 @torch.no_grad()
-def evaluate(model: nn.Module, loader: DataLoader, device: torch.device) -> dict[str, object]:
+def evaluate(model: nn.Module, loader: DataLoader, device: torch.device, use_amp: bool = False) -> dict[str, object]:
     model.eval()
     all_preds: list[int] = []
     all_labels: list[int] = []
@@ -220,7 +230,8 @@ def evaluate(model: nn.Module, loader: DataLoader, device: torch.device) -> dict
         input_ids = batch["input_ids"].to(device)
         attention_mask = batch["attention_mask"].to(device)
         labels = batch["labels"].to(device)
-        logits, _ = model(input_ids=input_ids, attention_mask=attention_mask)
+        with torch.autocast(device_type=device.type, dtype=torch.float16, enabled=use_amp):
+            logits, _ = model(input_ids=input_ids, attention_mask=attention_mask)
         all_preds.extend(torch.argmax(logits, dim=1).cpu().tolist())
         all_labels.extend(labels.cpu().tolist())
 
@@ -265,6 +276,8 @@ def train(args: argparse.Namespace) -> None:
     for split_name, df in [("train", train_df), ("val", val_df), ("test", test_df)]:
         print(f"{split_name}: {len(df):,} rows | labels={df['label'].value_counts().sort_index().to_dict()}")
 
+    gc.collect()
+    print("Tokenizing dataset...", flush=True)
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     train_data = TextDataset(train_df, tokenizer, args.max_len)
     val_data = TextDataset(val_df, tokenizer, args.max_len)
@@ -273,12 +286,16 @@ def train(args: argparse.Namespace) -> None:
     val_loader = DataLoader(val_data, batch_size=args.eval_batch_size, shuffle=False, num_workers=2, pin_memory=True)
     test_loader = DataLoader(test_data, batch_size=args.eval_batch_size, shuffle=False, num_workers=2, pin_memory=True)
 
+    print("Loading model weights...", flush=True)
     model = EncoderClassifier(
         model_name=model_name,
         dropout=args.dropout,
         use_viclsr_head=args.model == "viclsr",
     ).to(device)
+    print("Model ready. Starting training...", flush=True)
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
+    use_amp = args.fp16 and device.type == "cuda"
+    scaler = torch.amp.GradScaler("cuda", enabled=use_amp)
     total_steps = len(train_loader) * args.epochs
     scheduler = get_linear_schedule_with_warmup(
         optimizer,
@@ -302,21 +319,24 @@ def train(args: argparse.Namespace) -> None:
             attention_mask = batch["attention_mask"].to(device)
             labels = batch["labels"].to(device)
 
-            logits, features = model(input_ids=input_ids, attention_mask=attention_mask)
-            loss = ce_loss(logits, labels)
-            if args.model == "viclsr" and args.contrastive_weight > 0:
-                loss = loss + args.contrastive_weight * supervised_contrastive_loss(
-                    features, labels, temperature=args.temperature
-                )
+            with torch.autocast(device_type=device.type, dtype=torch.float16, enabled=use_amp):
+                logits, features = model(input_ids=input_ids, attention_mask=attention_mask)
+                loss = ce_loss(logits, labels)
+                if args.model == "viclsr" and args.contrastive_weight > 0:
+                    loss = loss + args.contrastive_weight * supervised_contrastive_loss(
+                        features, labels, temperature=args.temperature
+                    )
 
-            loss.backward()
+            scaler.scale(loss).backward()
+            scaler.unscale_(optimizer)
             torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
-            optimizer.step()
+            scaler.step(optimizer)
+            scaler.update()
             scheduler.step()
             running_loss += loss.item()
             progress.set_postfix(loss=f"{loss.item():.4f}")
 
-        val_metrics = evaluate(model, val_loader, device)
+        val_metrics = evaluate(model, val_loader, device, use_amp=use_amp)
         mean_loss = running_loss / max(len(train_loader), 1)
         print(
             f"epoch={epoch} train_loss={mean_loss:.4f} "
@@ -331,11 +351,12 @@ def train(args: argparse.Namespace) -> None:
             print(f"saved best checkpoint -> {best_path}")
 
     model.load_state_dict(torch.load(best_path, map_location=device))
-    test_metrics = evaluate(model, test_loader, device)
+    test_metrics = evaluate(model, test_loader, device, use_amp=use_amp)
     print("\nTEST")
     print(json.dumps({k: v for k, v in test_metrics.items() if k != "report"}, indent=2))
     print(test_metrics["report"])
 
+    test_metrics["config"] = vars(args)
     metrics_path = out_dir / "metrics.json"
     with metrics_path.open("w", encoding="utf-8") as f:
         json.dump(test_metrics, f, ensure_ascii=False, indent=2)
@@ -360,10 +381,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--temperature", type=float, default=0.07)
     parser.add_argument("--max-grad-norm", type=float, default=1.0)
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--voz-split-policy", choices=["proposed", "baseline"], default="proposed")
-    parser.add_argument("--voz-sample-size", type=int, default=40_000)
+    parser.add_argument("--voz-split-policy", choices=["proposed", "baseline"], default="baseline")
+    parser.add_argument("--voz-sample-size", type=int, default=100_000)
     parser.add_argument("--voz-hate-ratio", type=float, default=0.10)
     parser.add_argument("--smoke-test", action="store_true", help="Run a tiny end-to-end check before full training.")
+    parser.add_argument("--fp16", action="store_true", help="Use CUDA mixed precision to reduce VRAM and training time.")
     return parser.parse_args()
 
 

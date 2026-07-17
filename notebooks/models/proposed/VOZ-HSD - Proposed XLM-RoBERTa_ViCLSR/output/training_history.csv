@@ -1,0 +1,8 @@
+model,epoch,train_loss,val_accuracy,val_macro_f1,val_hate_f1,best_checkpoint
+xlm-roberta,1,0.7739,0.9593,0.7985,0.6186,true
+xlm-roberta,2,0.5056,0.9600,0.8303,0.6820,true
+xlm-roberta,3,0.3771,0.9684,0.8285,0.6736,false
+xlm-roberta,4,0.2842,0.9682,0.8501,0.7171,true
+xlm-roberta,5,0.1920,0.9692,0.8524,0.7210,true
+viclsr,1,0.6956,0.9430,0.4853,0.0000,true
+viclsr,2,0.6918,0.9430,0.4853,0.0000,false
